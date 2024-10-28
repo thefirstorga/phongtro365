@@ -9,7 +9,7 @@ function RegisterPage() {
     async function registerUser(ev) {
         ev.preventDefault();
         try {
-            await axios.post("/register", {
+            await axios.post("/auth/register", {
                 name, email, password
             })
             alert('Registration successfull')

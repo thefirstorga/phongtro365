@@ -1,27 +1,3 @@
-// import React from 'react'
-// import { Link } from 'react-router-dom'
-
-// function LoginPage() {
-
-//   return (
-//     <div className='mt-4 grow flex items-center justify-around'>
-//         <div className="mb-64">
-//             <h1 className='text-4xl text-center mb-4'>Login</h1>
-//             <form className='max-w-lg mx-auto' action="">
-//                 <input type="email" placeholder='your@email.com' />
-//                 <input type="password" placeholder='yourpassword' />
-//                 <button className='primary'>Login</button>
-//                 <div className="text-center text-gray-500 py-2 ">
-//                     Don't have an account yet? <Link className='underline text-black' to={'/register'}>Register</Link>
-//                 </div>
-//             </form>
-//         </div> 
-//     </div>
-//   )
-// }
-
-// export default LoginPage
-
 import {Link, Navigate} from "react-router-dom";
 import {useContext, useState} from "react";
 import axios from "axios";
@@ -35,7 +11,7 @@ export default function LoginPage() {
   async function handleLoginSubmit(ev) {
     ev.preventDefault();
     try {
-      const {data} = await axios.post('/login', {email,password});
+      const {data} = await axios.post('/auth/login', {email,password});
       setUser(data);
       alert('Login successful');
       setRedirect(true);
