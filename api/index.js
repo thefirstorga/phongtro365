@@ -12,6 +12,8 @@ app.use(express.json())
 // routes
 const usersRouter = require("./routes/Users");
 app.use("/auth", usersRouter);
+const postsRouter = require("./routes/Posts");
+app.use("/post", postsRouter);
 
 app.listen(4000, () => {
     console.log("Server running on port 4000");
