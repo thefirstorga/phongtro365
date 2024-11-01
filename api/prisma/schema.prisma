@@ -1,47 +1,47 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id String @id @default(uuid())
-    name String
-    email String @unique
-    password String
-    createAt DateTime @default(now())
-    updateAt DateTime @updatedAt
-    Place Place[]
+  id       String   @id @default(uuid())
+  name     String
+  email    String   @unique
+  password String
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  Place    Place[]
 }
 
 model Place {
-    id String @id @default(uuid())
-    owner User @relation(fields: [ownerId], references: [id])
-    ownerId String
-    title String
-    address String
-    photos PlacePhoto[]
-    description String
-    perks PlacePerk[]
-    extraInfo String
-    checkIn Int
-    checkOut Int
-    maxGuests Int
+  id          String       @id @default(uuid())
+  owner       User         @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  title       String
+  address     String
+  photos      PlacePhoto[]
+  description String
+  perks       PlacePerk[]
+  extraInfo   String
+  checkIn     String
+  checkOut    String
+  maxGuests   Int
 }
 
 model PlacePhoto {
-  id     String @id @default(uuid())
-  url    String
-  place  Place  @relation(fields: [placeId], references: [id])
+  id      String @id @default(uuid())
+  url     String
+  place   Place  @relation(fields: [placeId], references: [id])
   placeId String
 }
 
 model PlacePerk {
-  id     String @id @default(uuid())
-  perk   String
-  place  Place  @relation(fields: [placeId], references: [id])
+  id      String @id @default(uuid())
+  perk    String
+  place   Place  @relation(fields: [placeId], references: [id])
   placeId String
 }
