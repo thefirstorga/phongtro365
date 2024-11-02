@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
+  id       String    @id @default(uuid())
   name     String
-  email    String   @unique
+  email    String    @unique
   password String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-  Place    Place[]
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  places   Place[]
+  bookings Booking[]
 }
 
 model Place {
@@ -30,6 +31,8 @@ model Place {
   checkIn     String
   checkOut    String
   maxGuests   Int
+  price       Int
+  bookings    Booking[]
 }
 
 model PlacePhoto {
@@ -44,4 +47,18 @@ model PlacePerk {
   perk    String
   place   Place  @relation(fields: [placeId], references: [id])
   placeId String
+}
+
+model Booking {
+  id             String   @id @default(uuid())
+  place          Place    @relation(fields: [placeId], references: [id])
+  placeId        String
+  renter         User     @relation(fields: [renterId], references: [id])
+  renterId       String
+  checkIn        DateTime
+  checkOut       DateTime
+  numberOfGuests Int
+  name           String
+  phone          String
+  price          Int
 }

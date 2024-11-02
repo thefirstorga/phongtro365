@@ -16,7 +16,7 @@ function AccountNav() {
         return classes
       }
   return (
-    <nav className='w-full flex justify-center mt-8 gap-2'>
+    <nav className='w-full flex justify-center my-8 gap-2'>
         <Link className={linkClasses('profile')} to={'/account'}>
           My profile
         </Link>

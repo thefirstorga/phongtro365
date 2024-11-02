@@ -50,7 +50,7 @@ router.post('/places', (req, res) => {
     const {
         title, address, addedPhotos, 
         description, perks, extraInfo, 
-        checkIn, checkOut, maxGuests
+        checkIn, checkOut, maxGuests, price
     } = req.body
     jwt.verify(token, jwtSecret, {} , async (err, userData) => {
         if(err) throw err
@@ -61,7 +61,7 @@ router.post('/places', (req, res) => {
                 },
                 title, address, 
                 description, extraInfo, 
-                checkIn, checkOut, maxGuests,
+                checkIn, checkOut, maxGuests, price,
                 photos: {
                     create: addedPhotos.map(photo => ({ url: photo })), // Tạo các bản ghi PlacePhoto
                 },
@@ -122,7 +122,7 @@ router.put('/places/:id', async (req, res) => {
     const {
         title, address, addedPhotos,
         description, perks, extraInfo,
-        checkIn, checkOut, maxGuests
+        checkIn, checkOut, maxGuests, price
     } = req.body;
 
     try {
@@ -143,7 +143,7 @@ router.put('/places/:id', async (req, res) => {
             where: { id: id },
             data: {
                 title, address, description,
-                extraInfo, checkIn, checkOut, maxGuests,
+                extraInfo, checkIn, checkOut, maxGuests, price,
                 photos: {
                     create: newPhotos.map(photo => ({ url: photo })), // Thêm các URL mới
                 },
@@ -161,8 +161,26 @@ router.put('/places/:id', async (req, res) => {
     }
 });
 
+
 router.get('/places' ,async (req, res) => {
-    res.json(await prisma.place.findMany())
+    const places = await prisma.place.findMany({
+        include: { photos: true, perks: true }
+      });
+    
+    // res.json({
+    //     ...place,
+    //     photoUrls: place.photos.map(photo => photo.url), // Tạo mảng `photoUrls` từ `photos`
+    //     perkNames : place.perks.map(perk => perk.perk)
+    // });
+    // omggg, hiểu tại sao sai rồi, vì places nó đang là 1 mảng, không phải object như trên kia
+
+    const result = places.map(place => ({
+        ...place,
+        photoUrls: place.photos.map(photo => photo.url),
+        perkNames: place.perks.map(perk => perk.perk)
+    }));
+
+    res.json(result);
 })
 
 module.exports = router;
