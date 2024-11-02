@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PhotoUploader from '../PhotoUploader'
 import Perks from '../Perks'
 import axios from 'axios'
 import AccountNav from '../AccountNav'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 
 function PlacesFormPage() {
-    
+    const {id} = useParams()
     const [title, setTitle] = useState('')
     const [address, setAddress] = useState('')
     const [description, setDescription] = useState('')
@@ -17,6 +17,23 @@ function PlacesFormPage() {
     const [checkOut, setCheckOut] = useState('')
     const [maxGuests, setMaxGuests] = useState(1)
     const [redirect, setRedirect] = useState(false)
+
+    useEffect(() => {
+        if(!id) return
+        axios.get('/post/places/' + id).then(response => {
+            const {data} = response
+            setTitle(data.title)
+            setAddress(data.address)
+            setAddedPhotos(data.photoUrls)
+            setDescription(data.description)
+            setPerks(data.perkNames)
+            setExtraInfo(data.extraInfo)
+            setCheckIn(data.checkIn)
+            setCheckOut(data.checkOut)
+            setMaxGuests(data.maxGuests)
+         })
+    }, [id])
+
 
     function inputHeader(text) {
         return(
@@ -37,14 +54,18 @@ function PlacesFormPage() {
         )
     }
 
-    async function addNewPlace(ev) {
+    async function savePlace(ev) {
         ev.preventDefault()
         const placeData = {
             title, address, addedPhotos, 
             description, perks, extraInfo, 
             checkIn, checkOut, maxGuests
         }
-        await axios.post('/post/places', placeData)
+        if(id) {
+            await axios.put('/post/places/' + id, {id, ...placeData})
+        } else {
+            await axios.post('/post/places', placeData)
+        }
         setRedirect(true)
     }
 
@@ -53,7 +74,7 @@ function PlacesFormPage() {
   return (
     <div>
         <AccountNav />
-        <form onSubmit={addNewPlace}>
+        <form onSubmit={savePlace}>
             {preInput('Title', 'Fill your title')}
             <input type='text' value={title}
                 onChange={ev => setTitle(ev.target.value)}

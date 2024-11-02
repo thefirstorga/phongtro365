@@ -1,10 +1,23 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import axios from 'axios'
 
 function IndexPage() {
+
+  const [places, setPlaces] = useState([])
+  useEffect(() => {
+    axios.get('/post/places').then(response => {
+      setPlaces(response.data)
+    })
+  }, [])
+
   return (
     <div>
-      index page here
+      {console.log(places.length)}
+      {places.length > 0 && places.map(place => {
+        <div>
+          {place.title}
+        </div>
+      })}
     </div>
   );
 }

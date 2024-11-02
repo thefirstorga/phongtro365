@@ -71,7 +71,98 @@ router.post('/places', (req, res) => {
             }
         })
         res.json(placeData)
+        // res.json(userData)
     })
+})
+
+router.get('/user-places', (req, res) => {
+    const {token} = req.cookies
+    // const {token} = req.body
+    jwt.verify(token, jwtSecret, {} , async (err, userData) => {
+        const {id} = userData
+        res.json(await prisma.place.findMany({
+            where: {
+                ownerId: id
+            },
+            include: {
+                photos: true,
+            }
+        }))
+    })
+})
+
+router.get('/places/:id', async (req, res) => {
+    const { id } = req.params;
+    const place = await prisma.place.findUnique({
+      where: { id },
+      include: { photos: true, perks: true }
+    });
+  
+    res.json({
+        ...place,
+        photoUrls: place.photos.map(photo => photo.url), // Tạo mảng `photoUrls` từ `photos`
+        perkNames : place.perks.map(perk => perk.perk)
+      });
+  });
+  
+// router.put('/places/:id', async (req, res) => {
+//     const {token} = req.cookies
+//     const {
+//         id, title, address, addedPhotos, 
+//         description, perks, extraInfo, 
+//         checkIn, checkOut, maxGuests
+//     } = req.body
+//     jwt.verify(token, jwtSecret, {} , async (err, userData) => {
+        
+//     })
+// })
+
+router.put('/places/:id', async (req, res) => {
+    const { id } = req.params;
+    const {
+        title, address, addedPhotos,
+        description, perks, extraInfo,
+        checkIn, checkOut, maxGuests
+    } = req.body;
+
+    try {
+        // Lấy các URL ảnh hiện tại từ cơ sở dữ liệu
+        const existingPlace = await prisma.place.findUnique({
+            where: { id: id },
+            include: { photos: true }
+        });
+
+        // Tạo một tập hợp các URL ảnh đã có
+        const existingPhotoUrls = new Set(existingPlace.photos.map(photo => photo.url));
+
+        // Lọc ra các URL mới cần thêm
+        const newPhotos = addedPhotos.filter(photo => !existingPhotoUrls.has(photo));
+
+        // Cập nhật thông tin của Place và thêm các ảnh mới (chỉ những ảnh chưa có)
+        const updatedPlace = await prisma.place.update({
+            where: { id: id },
+            data: {
+                title, address, description,
+                extraInfo, checkIn, checkOut, maxGuests,
+                photos: {
+                    create: newPhotos.map(photo => ({ url: photo })), // Thêm các URL mới
+                },
+                // Cập nhật perks (tương tự, bạn có thể thêm logic để tránh trùng lặp)
+                perks: {
+                    create: perks.map(perk => ({ perk: perk })),
+                },
+            }
+        });
+
+        res.json(updatedPlace);
+    } catch (error) {
+        console.error("Error updating Place:", error);
+        res.status(500).json({ error: "Something went wrong while updating the place." });
+    }
+});
+
+router.get('/places' ,async (req, res) => {
+    res.json(await prisma.place.findMany())
 })
 
 module.exports = router;
