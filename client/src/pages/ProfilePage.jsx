@@ -1,9 +1,9 @@
 import React, { useContext, useState } from 'react'
-import { UserContext } from '../UserContext'
+import { UserContext } from '../components/UserContext'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import PlacesPage from './PlacesPage'
-import AccountNav from '../AccountNav'
+import AccountNav from '../components/AccountNav'
 
 function ProfilePage() {
   const [redirect, setRedirect] = useState(null)

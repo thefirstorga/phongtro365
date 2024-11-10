@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import PhotoUploader from '../PhotoUploader'
-import Perks from '../Perks'
+import PhotoUploader from '../components/PhotoUploader'
+import Perks from '../components/Perks'
 import axios from 'axios'
-import AccountNav from '../AccountNav'
+import AccountNav from '../components/AccountNav'
 import { Navigate, useParams } from 'react-router-dom'
 
 function PlacesFormPage() {
@@ -32,7 +32,7 @@ function PlacesFormPage() {
             setCheckIn(data.checkIn)
             setCheckOut(data.checkOut)
             setMaxGuests(data.maxGuests)
-            setPrice(data.response)
+            setPrice(data.price)
          })
     }, [id])
 
@@ -91,7 +91,7 @@ function PlacesFormPage() {
             
             {preInput('Photos', 'Fill your photos')}
             <PhotoUploader addedPhotos={addedPhotos} setAddedPhotos={setAddedPhotos}/>
-
+            {/* {console.log(addedPhotos[0])} */}
             {preInput('Description', 'Fill your description')}
             <textarea value={description} onChange={ev => setDescription(ev.target.value)}/>
 

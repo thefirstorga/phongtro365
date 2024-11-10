@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import AccountNav from '../AccountNav'
+import AccountNav from '../components/AccountNav'
 import axios from 'axios'
 import PlaceImg from '../components/PlaceImg'
 import {format, differenceInCalendarDays} from 'date-fns'
@@ -15,11 +15,11 @@ function BookingsPage() {
     },[])
 
   return (
-    <div>
+    <div className='lg:mx-16'>
         <AccountNav />
-        <div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-8'>
             {bookings?.length > 0 && bookings.map(booking => (
-                <Link to={`/account/bookings/${booking.id}`} className='flex gap-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500'>
+                <Link to={`/account/bookings/${booking.id}`} className='flex gap-4 mt-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500'>
                     <div className='w-48 h-48'>
                         <PlaceImg place={booking.place} />
                     </div>
