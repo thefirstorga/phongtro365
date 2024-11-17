@@ -7,7 +7,7 @@ function IndexPage() {
   const [places, setPlaces] = useState([])
   useEffect(() => {
     axios.get('/post/places').then(response => {
-      setPlaces([...response.data, ...response.data])
+      setPlaces(response.data)
     })
   }, [])
 

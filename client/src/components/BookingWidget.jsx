@@ -1,75 +1,70 @@
 import React, { useContext, useEffect, useState } from 'react'
-import {differenceInCalendarDays} from 'date-fns'
 import axios from 'axios'
 import { Navigate } from 'react-router-dom'
 import {UserContext} from './UserContext'
 
 function BookingWidget({place}) {
-    const [checkIn, setCheckIn] = useState('')
-    const [checkOut, setCheckOut] = useState('')
-    const [numberOfGuests, setNumberOfGuests] = useState(1)
-    const [name, setName] = useState('')
-    const [phone, setPhone] = useState('')
+
     const [redirect, setRedirect] = useState('')
     const {user} = useContext(UserContext)
+    const [isBooked, setIsBooked] = useState(false)
 
     useEffect(() => {
-        setName(user.name)
-    }, [user])
+        if (user && user.id) {
+            const userBooking = place?.bookings?.find(booking => booking.renterId === user.id && booking.status === 'PENDING')
+            setIsBooked(!!userBooking)
+        }
+    }, [place.bookings, user])
 
-    let numberOfNights = 0
-    if(checkIn && checkOut) {
-        numberOfNights = differenceInCalendarDays(new Date(checkOut), new Date(checkIn))
-    }
+    // không hiểu sao viết như này lại không được:)))
+
+    // useEffect(() => {
+    //     const userBooking = place?.bookings?.find(booking => booking.userId === user.id) 
+    //     if (userBooking) {
+    //         setIsBooked(true)
+    //     } else {
+    //         setIsBooked(false)
+    //     }
+    // }, [place.bookings, user])
 
     async function bookThisPlace() {
         const data = {
-            checkIn, checkOut, numberOfGuests, name, phone,
             placeId: place.id,
-            price: numberOfNights*place.price
         }
         const response = await axios.post('/booking', data)
-        const bookingId = response.data.id
-        setRedirect(`/account/bookings/${bookingId}`)
+        window.location.reload()
     }
+
+    async function cancelBooking() {
+        const data = {
+            placeId: place.id
+        }
+        try {
+            await axios.post('/booking/cancel-booking', data) // API hủy booking
+            setIsBooked(false) // Cập nhật trạng thái là chưa đặt phòng
+            window.location.reload()
+        } catch (error) {
+            console.error("Cancellation failed:", error)
+        }
+    }
+
 
     if(redirect) return <Navigate to={redirect} />
 
   return (
     <div className='bg-white shadow-sm p-4 rounded-2xl'>
         <div className='text-2xl text-center'>
-            Price: ${place.price} / per night
+            Price: ${place.price} / per month
         </div>
-        <div className="border rounded-2xl mt-4">
-            <div className="flex">
-                <div className='py-3 px-4'>
-                    <label>Check in:</label>
-                    <input type="date" value={checkIn} onChange={ev => setCheckIn(ev.target.value)} />
-                </div>
-                <div className='py-3 px-4 border-l'>
-                    <label>Check out:</label>
-                    <input type="date" value={checkOut} onChange={ev => setCheckOut(ev.target.value)}/>
-                </div>
-            </div>
-            <div className='py-3 px-4 border-t'>
-                <label>Number of guests: </label>
-                <input type="number" value={numberOfGuests} onChange={ev => setNumberOfGuests(Number(ev.target.value))} />
-            </div>
-            {numberOfNights > 0 && (
-                <div className='py-3 px-4 border-t'>
-                    <label>Your full name: </label>
-                    <input type="text" value={name} onChange={ev => setName(ev.target.value)} />
-                    <label>Your phone number: </label>
-                    <input type="tel" value={phone} onChange={ev => setPhone(ev.target.value)} />
-                </div>
+        {!isBooked ? (
+                <button onClick={bookThisPlace} className='primary mt-4'>
+                    Book this place
+                </button>
+            ) : (
+                <button onClick={cancelBooking} className='primary mt-4'>
+                    Cancel booking
+                </button>
             )}
-        </div>
-        <button onClick={bookThisPlace} className='primary mt-4'>
-            Book this place
-            {numberOfNights > 0 && (
-                    <span>${numberOfNights * place.price}</span>
-            )}
-        </button>
     </div>
   )
 }

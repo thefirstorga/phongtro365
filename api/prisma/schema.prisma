@@ -8,10 +8,12 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(uuid())
+  id       Int       @id @default(autoincrement())
   name     String
   email    String    @unique
   password String
+  avatar   String?
+  phone    String?
   createAt DateTime  @default(now())
   updateAt DateTime  @updatedAt
   places   Place[]
@@ -19,46 +21,70 @@ model User {
 }
 
 model Place {
-  id          String       @id @default(uuid())
+  id          Int          @id @default(autoincrement())
   owner       User         @relation(fields: [ownerId], references: [id])
-  ownerId     String
+  ownerId     Int
   title       String
   address     String
+  area        Int // diện tích
   photos      PlacePhoto[]
   description String
   perks       PlacePerk[]
   extraInfo   String
-  checkIn     String
-  checkOut    String
-  maxGuests   Int
+  duration    Int // thời hạn hợp đồng
   price       Int
   bookings    Booking[]
 }
 
 model PlacePhoto {
-  id      String @id @default(uuid())
+  id      Int    @id @default(autoincrement())
   url     String
   place   Place  @relation(fields: [placeId], references: [id])
-  placeId String
+  placeId Int
 }
 
 model PlacePerk {
   id      String @id @default(uuid())
   perk    String
   place   Place  @relation(fields: [placeId], references: [id])
-  placeId String
+  placeId Int
 }
 
 model Booking {
-  id             String   @id @default(uuid())
-  place          Place    @relation(fields: [placeId], references: [id])
-  placeId        String
-  renter         User     @relation(fields: [renterId], references: [id])
-  renterId       String
-  checkIn        DateTime
-  checkOut       DateTime
-  numberOfGuests Int
-  name           String
-  phone          String
-  price          Int
+  id         Int           @id @default(autoincrement())
+  place      Place         @relation(fields: [placeId], references: [id])
+  placeId    Int
+  renter     User          @relation(fields: [renterId], references: [id])
+  renterId   Int
+  checkOut   DateTime?
+  status     BookingStatus @default(PENDING)
+  isContinue Boolean       @default(false)
+  invoices   Invoice[]
+  createAt   DateTime      @default(now())
+  updateAt   DateTime      @updatedAt
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  WAIT
+  RENTED
+}
+
+model Invoice {
+  id          Int            @id @default(autoincrement())
+  booking     Booking        @relation(fields: [bookingId], references: [id])
+  bookingId   Int
+  title       String
+  description String?
+  photos      InvoicePhoto[]
+  createdAt   DateTime       @default(now())
+  updateAt    DateTime       @updatedAt
+}
+
+model InvoicePhoto {
+  id        Int     @id @default(autoincrement())
+  url       String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+  invoiceId Int
 }
