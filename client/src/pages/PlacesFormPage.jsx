@@ -13,25 +13,27 @@ function PlacesFormPage() {
     const [addedPhotos, setAddedPhotos] = useState([])
     const [perks, setPerks] = useState([])
     const [extraInfo, setExtraInfo] = useState('')
-    const [checkIn, setCheckIn] = useState('')
-    const [checkOut, setCheckOut] = useState('')
-    const [maxGuests, setMaxGuests] = useState(1)
+    const [area, setArea] = useState(30)
+    const [duration, setDuration] = useState(6)
     const [price, setPrice] = useState(100)
     const [redirect, setRedirect] = useState(false)
 
     useEffect(() => {
         if(!id) return
-        axios.get('/post/places/' + id).then(response => {
-            const {data} = response
+        axios.get('/post/place/' + id).then(response => {
+            let {data} = response
+            data = data.place
             setTitle(data.title)
             setAddress(data.address)
-            setAddedPhotos(data.photoUrls)
+            // console.log(data)
+            const photos = data.photos.map(photoGet => photoGet.url);
+            setAddedPhotos(photos);
             setDescription(data.description)
-            setPerks(data.perkNames)
+            const perks = data.perks.map(perkGet => perkGet.perk)
+            setPerks(perks)
             setExtraInfo(data.extraInfo)
-            setCheckIn(data.checkIn)
-            setCheckOut(data.checkOut)
-            setMaxGuests(data.maxGuests)
+            setArea(data.area)
+            setDuration(data.duration)
             setPrice(data.price)
          })
     }, [id])
@@ -61,7 +63,7 @@ function PlacesFormPage() {
         const placeData = {
             title, address, addedPhotos, 
             description, perks, extraInfo, 
-            checkIn, checkOut, maxGuests, price
+            area, duration, price
         }
         if(id) {
             await axios.put('/post/places/' + id, {id, ...placeData})
@@ -103,30 +105,22 @@ function PlacesFormPage() {
             {preInput('Extra info', 'Fill your extra info')}
             <textarea value={extraInfo} onChange={ev => setExtraInfo(ev.target.value)} />
 
-            {preInput('Checkin, Checkout, Max guests', 'Fill the blank')}
-            <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-4'>
+            {preInput('Area - Duration - Price', 'Fill the blank')}
+            <div className='grid gap-2 sm:grid-cols-3 lg:grid-cols-3'>
                 <div>
-                    <h3 className='mt-2 -mb-1'>Checkin time</h3>
-                    <input type="text" value={checkIn}
-                        onChange={ev => setCheckIn(ev.target.value)}
-                        placeholder='14:00'
+                    <h3 className='mt-2 -mb-1'>Area - mét vuông</h3>
+                    <input type="number" value={area}
+                        onChange={ev => setArea(Number(ev.target.value))}
                     />
                 </div>
                 <div>
-                    <h3 className='mt-2 -mb-1'>Checkout time</h3>
-                    <input type="text" value={checkOut}
-                        onChange={ev => setCheckOut(ev.target.value)}
-                        placeholder='11:00'
+                    <h3 className='mt-2 -mb-1'>Duration - tháng</h3>
+                    <input type="number" value={duration}
+                        onChange={ev => setDuration(Number(ev.target.value))}
                     />
                 </div>
                 <div>
-                    <h3 className='mt-2 -mb-1'>Max guests</h3>
-                    <input type="number" value={maxGuests}
-                        onChange={ev => setMaxGuests(Number(ev.target.value))}
-                    />
-                </div>
-                <div>
-                    <h3 className='mt-2 -mb-1'>Price</h3>
+                    <h3 className='mt-2 -mb-1'>Price per month</h3>
                     <input type="number" value={price}
                         onChange={ev => setPrice(Number(ev.target.value))}
                     />

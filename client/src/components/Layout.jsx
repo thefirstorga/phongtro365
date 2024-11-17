@@ -6,7 +6,9 @@ function Layout() {
   return (
     <div className='py-4 px-8 flex flex-col min-h-screen'>
       <Header />
-      <Outlet />
+      <div className='lg:px-44'>
+        <Outlet />
+      </div>
     </div>
   )
 }
