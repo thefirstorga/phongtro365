@@ -1,57 +1,325 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import BookingWidget from '../components/BookingWidget';
 import PlaceGallery from '../components/PlaceGallery';
+import { UserContext } from '../components/UserContext';
+import PlaceDetail from './PlaceDetail';
+import { differenceInCalendarMonths, differenceInDays, format } from 'date-fns';
+import InvoiceDetailRenter from '../components/InvoiceDetailRenter';
 
 function PlacePage() {
-    const {id} = useParams()
-    const [place, setPlace] = useState(null)
+    const { id } = useParams();
+    const { user } = useContext(UserContext);
+    const [place, setPlace] = useState(null);
+    // bookingDetail là biến mà lưu state booking của người đang đăng nhập
+    const [bookingDetail, setBookingDetail] = useState(null);
 
+    // useEffect for fetching place data
     useEffect(() => {
-        if(!id) return;
-        axios.get(`/post/places/${id}`).then(response => {
-            setPlace(response.data)
-        })
+        if (!id) return;
+        axios.get(`/post/place/${id}`)
+            .then(response => {
+                setPlace(response.data.place);
+            })
+            .catch(error => {
+                console.error("There was an error fetching the place data!", error);
+            });
     }, [id])
-    if(!place) return ''
+    
+    // useEffect for checking booking details only after place data is loaded
+    useEffect(() => {
+        if (user && user.id && place?.bookings) {
+            const userBooking = place.bookings.find(booking => booking.renterId === user.id && booking.status !== 'RENTED');
+            setBookingDetail(userBooking);
+        }
+    }, [place?.bookings, user]);
 
-  return (
-    <div className='mt-4 bg-gray-100 -mx-8 px-8 py-8'>
-        <h1 className='text-3xl'>{place.title}</h1>
-        <a className='flex gap-1 my-2 font-semibold underline' target='_blank' href={'https://maps.google.com/?q='+place.address}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-            </svg>
-            {place.address}</a>
-        
-        <PlaceGallery place={place} />
-      
-        <div className='mt-8 mb-8 grid gap-8 grid-cols-1 md:grid-cols-[2fr_1fr]'>
-            <div>
-                <div className='my-4'>
-                    <h2 className='font-semibold text-2xl'>Description</h2>
-                    {place.description}
+    async function continueRent(ev, bookingId, placeId) {
+        ev.preventDefault();
+        const data = { bookingId, placeId };
+        await axios.put('/booking/continue-rent', data)
+        window.location.reload()
+    }
+
+    async function notContinueRent(ev, bookingId) {
+        ev.preventDefault();
+        const data = {bookingId}
+        await axios.put('/booking/not-continue-rent', data)
+        window.location.reload()
+    }
+
+    async function notRentRequest(ev, bookingId) {
+        ev.preventDefault();
+        const data = {bookingId}
+        await axios.put('/booking/not-rent-request', data)
+        window.location.reload()
+    }
+
+    async function undoNotRentRequest(ev, bookingId) {
+        ev.preventDefault();
+        const data = {bookingId}
+        await axios.put('/booking/undo-not-rent-request', data)
+        window.location.reload()
+    }
+
+  
+    // console.log(bookingDetail)
+
+    let rentInfo = null
+    let bookingWidget = (
+        <div>
+            <BookingWidget place={place} />
+        </div>
+    )
+    let option = null
+
+    if (!place && !bookingDetail) {
+        return <div>Loading place data...</div>
+    } else {
+        if(user.id === place.ownerId) {
+            return <PlaceDetail/>
+        }
+        let bookingNow = place.bookings.find(booking => booking.status === "APPROVED") || place.bookings.find(booking => booking.status === "WAIT")// dòng này tìm xem có cái nào approved không
+        // console.log(bookingNow)
+        if(place.bookings.length !== 0 && 
+            bookingNow !== undefined 
+        ) {
+            const today = new Date();
+            const checkOutDate = new Date(bookingNow.checkOut);
+            const monthsRemaining = differenceInCalendarMonths(checkOutDate, today);
+
+            if(monthsRemaining > 0) {
+                bookingWidget = null
+                rentInfo = (
+                    <div className='bg-gray-200 p-6 mb-6 rounded-2xl'>
+                        <h2 className='text-xl font-bold text-primary'>
+                            Nhà này đang có người thuê!
+                        </h2>
+                    </div>
+                )
+            } else {
+                rentInfo = (
+                    <div className='bg-gray-200 p-6 mb-6 rounded-2xl'>
+                        <h2 className='text-xl font-bold text-primary'>
+                            Nhà này đang có người thuê!
+                        </h2>
+                        <h2 className='font-bold'> - Tuy nhiên họ chưa xác nhận ở tiếp trong vòng 1 tháng nữa, bạn vẫn có thể đặt thuê nhà này!</h2>
+                        <h2 className='font-bold'> - Bạn có thể kéo xuống và đặt trước nhà này.</h2>
+                    </div>
+                )
+            }
+        }
+        if(bookingDetail != null) {
+            if(bookingDetail.status === 'PENDING') {
+                rentInfo = (
+                    <div className='bg-gray-200 p-6 mb-6 rounded-2xl'>
+                        <h2 className='text-xl font-bold text-primary'>Your booking information:</h2>
+                        <div>
+                            Bạn đã đặt phòng, vui lòng chờ chủ nhà duyệt nhé! <br />
+                            Bạn vẫn có thể hủy booking!
+                        </div>
+                    </div>
+                )
+            }
+            if(bookingDetail.status === 'APPROVED') {
+                const today = new Date();
+                const checkOutDate = new Date(bookingDetail.checkOut);
+                const monthsRemaining = differenceInCalendarMonths(checkOutDate, today);
+                const startOfNextMonth = new Date(today.getFullYear(), today.getMonth() + monthsRemaining, 1);
+                const remainingDaysInMonth = differenceInDays(checkOutDate, startOfNextMonth);
+
+                if(monthsRemaining === 0 
+                    && bookingDetail.isContinue === false
+                ) {
+                    option = (
+                        <div>
+                            <p className="text-lg font-semibold text-gray-800">Bạn có thể chọn ở tiếp nhà này.</p>
+                            <button onClick={(ev) => continueRent(ev, bookingDetail.id, id)} className="primary">Tiếp tục ở</button>
+                            <button onClick={(ev) => notContinueRent(ev, bookingDetail.id)} className="mt-2 primary">Không tiếp tục ở</button>
+                        </div>
+                    )
+                    console.log("option")
+                } else if(bookingDetail.isContinue === true) {
+                    option = (
+                        <div>
+                            <p className="text-lg font-semibold text-gray-800">
+                                Bạn đã xác nhận không ở tiếp nữa. <br />
+                                Bạn có thể hủy thuê nhà ở đây.
+                            </p>
+                        </div>
+                    )
+                }
+
+                rentInfo = (
+                    <div>
+                        <div className='bg-gray-200 p-6 mb-6 rounded-2xl'>
+                            <div className='space-y-3'>
+                                <h2 className='text-xl font-bold text-primary'>Bạn đang thuê nhà này!</h2>
+                                <div className="p-4 bg-white border border-gray-300 rounded-lg shadow-md">
+                                    <p className="text-lg font-semibold text-gray-800">Thời hạn hợp đồng:</p>
+                                    <p className="text-gray-600">{format(checkOutDate, 'dd-MM-yyyy')}</p>
+                                </div>
+                                <div className="p-4 bg-white border border-gray-300 rounded-lg shadow-md">
+                                    <p className="text-lg font-semibold text-gray-800">Thời gian còn lại:</p>
+                                    <p className="text-gray-600">{monthsRemaining} tháng và {remainingDaysInMonth} ngày</p>
+                                </div>
+                                {option}
+                                <button onClick={(ev) => notRentRequest(ev, bookingDetail.id)} className="primary">Hủy thuê nhà</button>
+                            </div>
+                            <InvoiceDetailRenter bookingId={bookingDetail.id} />
+                        </div>
+                    </div>
+                )
+                bookingWidget = null
+            }
+            if(bookingDetail.status === 'WAIT') {
+                const today = new Date();
+                const checkOutDate = new Date(bookingDetail.checkOut);
+                const monthsRemaining = differenceInCalendarMonths(checkOutDate, today);
+                const startOfNextMonth = new Date(today.getFullYear(), today.getMonth() + monthsRemaining, 1);
+                const remainingDaysInMonth = differenceInDays(checkOutDate, startOfNextMonth);
+
+                // if(monthsRemaining === 0 
+                //     && bookingDetail.isContinue === false
+                // ) {
+                //     option = (
+                //         <div>
+                //             <p className="text-lg font-semibold text-gray-800">Bạn có thể chọn ở tiếp nhà này.</p>
+                //             <button onClick={(ev) => continueRent(ev, bookingDetail.id, id)} className="primary">Tiếp tục ở</button>
+                //             <button onClick={(ev) => notContinueRent(ev, bookingDetail.id)} className="mt-2 primary">Không tiếp tục ở</button>
+                //         </div>
+                //     )
+                //     console.log("option")
+                // } else if(bookingDetail.isContinue === true) {
+                //     option = (
+                //         <div>
+                //             <p className="text-lg font-semibold text-gray-800">
+                //                 Bạn đã xác nhận không ở tiếp nữa. <br />
+                //                 Bạn có thể hủy thuê nhà ở đây.
+                //             </p>
+                //         </div>
+                //     )
+                // }
+
+                rentInfo = (
+                    <div>
+                        <div className='bg-gray-200 p-6 mb-6 rounded-2xl'>
+                            <div className='space-y-3'>
+                                <h2 className='text-xl font-bold text-primary'>Bạn đang thuê nhà này!</h2>
+                                <div className="p-4 bg-white border border-gray-300 rounded-lg shadow-md">
+                                    <p className="text-lg font-semibold text-gray-800">Thời hạn hợp đồng:</p>
+                                    <p className="text-gray-600">{format(checkOutDate, 'dd-MM-yyyy')}</p>
+                                </div>
+                                <div className="p-4 bg-white border border-gray-300 rounded-lg shadow-md">
+                                    <p className="text-lg font-semibold text-gray-800">Thời gian còn lại:</p>
+                                    <p className="text-gray-600">{monthsRemaining} tháng và {remainingDaysInMonth} ngày</p>
+                                </div>
+                                <h2 className='text-xl font-bold text-primary'>Bạn đã hủy thuê nhà!</h2>
+                                <button onClick={(ev) => undoNotRentRequest(ev, bookingDetail.id)} className="primary">Hoàn tác hủy thuê nhà</button>
+                            </div>
+                            <InvoiceDetailRenter bookingId={bookingDetail.id} />
+                        </div>
+                    </div>
+                )
+                bookingWidget = null
+            }
+        }
+    }
+
+    return (
+        // <div className='mt-4 bg-gray-100 -mx-8 px-8 py-8 rounded-3xl'>
+        //     {/* Show booking status if it exists */}
+        //     {/* <div className='border-b-2'>
+        //         {rentInfo && rentInfo}
+        //     </div> */}
+        //     {rentInfo && (
+        //         <div className='border-b-2'>
+        //             {rentInfo && rentInfo}
+        //         </div>
+        //     )}
+        //     <h1 className='text-3xl mt-4'>{place.title}</h1>
+        //     <a className='flex gap-1 my-2 font-semibold underline' target='_blank' href={'https://maps.google.com/?q=' + place.address}>
+        //         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+        //             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        //             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+        //         </svg>
+        //         {place.address}
+        //     </a>
+
+        //     <PlaceGallery place={place} />
+
+        //     <div className='mt-8 mb-8 grid gap-8 grid-cols-1 md:grid-cols-[2fr_1fr]'>
+        //         <div>
+        //             <div className='my-4'>
+        //                 <h2 className='font-semibold text-2xl'>Description</h2>
+        //                 {place.description}
+        //             </div>
+        //             Area: {place.area}<br />
+        //             Duration: {place.duration}<br />
+        //             Price: {place.price}
+        //         </div>
+        //         {bookingWidget}
+        //     </div>
+        //     <div className="bg-white -mx-8 px-8 py-8 border-t">
+        //         <div>
+        //             <h2 className='font-semibold text-2xl'>Extra Info</h2>
+        //         </div>
+        //         <div className='mb-4 mt-2 text-sm text-gray-800 leading-5'>
+        //             {place.extraInfo}
+        //         </div>
+        //     </div>
+        // </div>
+        <div>
+            {/* Content Based on Booking Status */}
+            <div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
+                {rentInfo}
+            </div>
+            {/* Place Details Section */}
+            <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
+                <div className='flex gap-4 items-center'>
+                    <h1 className="text-3xl font-semibold text-gray-800">{place.title}</h1>
                 </div>
-                Checkin: {place.checkIn}<br/>
-                Checkout: {place.checkOut}<br/>
-                Max number of guests: {place.maxGuests}
+                <a
+                    className="flex gap-1 my-2 font-semibold text-blue-500 underline"
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    href={'https://maps.google.com/?q=' + place.address}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                    </svg>
+                    {place.address}
+                </a>
+                
+                <PlaceGallery place={place} />
             </div>
-            <div>
-                <BookingWidget place={place} />
+
+            {/* Place Description and Details */}
+            <div className='mt-8 mb-8 grid gap-8 grid-cols-1 md:grid-cols-[2fr_1fr] p-6 rounded-lg shadow-md bg-gray-100'>
+                <div>
+                    <div className='my-4'>
+                        <h2 className='font-semibold text-2xl'>Description</h2>
+                        {place.description}
+                    </div>
+                    Area: {place.area}<br />
+                    Duration: {place.duration}<br />
+                    Price: {place.price}
+                </div>
+                {bookingWidget}
             </div>
+
+            {/* Extra Info Section */}
+            <div className="bg-gray-100 px-8 py-8 border-t mt-6 rounded-lg shadow-md">
+                <h2 className="font-semibold text-2xl text-gray-800">Thông tin thêm</h2>
+                <p className="text-gray-600 mt-4 leading-6">{place.extraInfo}</p>
+            </div>
+
+            {/* History section */}
+            {/* {historyRent} */}
         </div>
-        <div className="bg-white -mx-8 px-8 py-8 border-t">
-            <div>
-                <h2 className='font-semibold text-2xl'>Extra Info</h2>
-            </div>
-            <div className='mb-4 mt-2 text-sm text-gray-800 leading-5'>
-                {place.extraInfo}
-            </div>
-        </div>
-    </div>
-  )
+    );
 }
 
-export default PlacePage
+export default PlacePage;

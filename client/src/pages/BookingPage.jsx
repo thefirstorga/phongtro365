@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import PlaceGallery from '../components/PlaceGallery'
-import {format, differenceInCalendarDays} from 'date-fns'
+import BookingWidget from '../components/BookingWidget'
 
 function BookingPage() {
     const {id} = useParams()
@@ -10,8 +10,10 @@ function BookingPage() {
     let place = null
     useEffect(() => {
         if(id) {
+            const idNumber = Number(id);
             axios.get('/booking').then(response => {
-                const foundBooking = response.data.find(({id}) => id === id)
+                const foundBooking = response.data.find(({id}) => id === idNumber)
+                console.log(foundBooking)
                 if(foundBooking) setBooking(foundBooking)
             })
         }
@@ -33,12 +35,15 @@ function BookingPage() {
         </a>
         <div className='bg-gray-200 p-6 mb-6 rounded-2xl'>
             <h2 className='text-xl font-bold'>Your booking infomation:</h2>
-            <div className='border-t text-gray-600 border-gray-300 mt-2 py-2'>
+            {/* <div className='border-t text-gray-600 border-gray-300 mt-2 py-2'>
                 {format(new Date(booking.checkIn), 'yyyy-mm-dd')} - {format(new Date(booking.checkOut), 'yyyy-mm-dd')}
             </div>
             <div className=''>
                 {differenceInCalendarDays(new Date(booking.checkOut), new Date(booking.checkIn))} nights
                 | Total price: ${booking.price}
+            </div> */}
+            <div>
+                Oke built it later
             </div>
         </div>
 
@@ -50,9 +55,9 @@ function BookingPage() {
                     <h2 className='font-semibold text-2xl'>Description</h2>
                     {place.description}
                 </div>
-                Checkin: {place.checkIn}<br/>
-                Checkout: {place.checkOut}<br/>
-                Max number of guests: {place.maxGuests}
+            </div>
+            <div>
+                <BookingWidget place={place} />
             </div>
         </div>
         <div className="bg-white -mx-8 px-8 py-8 border-t">
