@@ -7,6 +7,7 @@ import { UserContext } from '../components/UserContext';
 import PlaceDetail from './PlaceDetail';
 import { differenceInCalendarMonths, differenceInDays, format } from 'date-fns';
 import InvoiceDetailRenter from '../components/InvoiceDetailRenter';
+import MapComponent from '../components/MapComponent';
 
 function PlacePage() {
     const { id } = useParams();
@@ -227,6 +228,7 @@ function PlacePage() {
         }
     }
 
+
     return (
         // <div className='mt-4 bg-gray-100 -mx-8 px-8 py-8 rounded-3xl'>
         //     {/* Show booking status if it exists */}
@@ -280,18 +282,26 @@ function PlacePage() {
                 <div className='flex gap-4 items-center'>
                     <h1 className="text-3xl font-semibold text-gray-800">{place.title}</h1>
                 </div>
-                <a
-                    className="flex gap-1 my-2 font-semibold text-blue-500 underline"
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    href={'https://maps.google.com/?q=' + place.address}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                    </svg>
-                    {place.address}
-                </a>
+                <div className='flex gap-6 my-2'>
+                    <p className='flex gap-1 my-2 font-semibold'>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                        </svg>
+                        {place.address}
+                    </p>
+                    {place.latitude && (
+                        <MapComponent places={[place]} />
+                    )}                    
+                    <a
+                        className="flex gap-1 px-2 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        href={'https://maps.google.com/?q=' + place.address}
+                    >
+                        Xem trên Google Map
+                    </a>
+                </div>
                 
                 <PlaceGallery place={place} />
             </div>
