@@ -3,12 +3,15 @@ import PhotoUploader from '../components/PhotoUploader'
 import Perks from '../components/Perks'
 import axios from 'axios'
 import AccountNav from '../components/AccountNav'
+import LocationPicker from '../components/LocationPicker'
 import { Navigate, useParams } from 'react-router-dom'
 
 function PlacesFormPage() {
     const {id} = useParams()
     const [title, setTitle] = useState('')
     const [address, setAddress] = useState('')
+    const [latitude, setLatitude] = useState(null)
+    const [longitude, setLongitude] = useState(null)
     const [description, setDescription] = useState('')
     const [addedPhotos, setAddedPhotos] = useState([])
     const [perks, setPerks] = useState([])
@@ -25,6 +28,8 @@ function PlacesFormPage() {
             data = data.place
             setTitle(data.title)
             setAddress(data.address)
+            setLatitude(data.latitude);
+            setLongitude(data.longitude);
             // console.log(data)
             const photos = data.photos.map(photoGet => photoGet.url);
             setAddedPhotos(photos);
@@ -61,7 +66,8 @@ function PlacesFormPage() {
     async function savePlace(ev) {
         ev.preventDefault()
         const placeData = {
-            title, address, addedPhotos, 
+            title, address, latitude, longitude, 
+            addedPhotos, 
             description, perks, extraInfo, 
             area, duration, price
         }
@@ -89,6 +95,18 @@ function PlacesFormPage() {
             <input type='text' value={address}
                 onChange={ev => setAddress(ev.target.value)}
                 placeholder='Address'
+            />
+            <h2 className="text-2xl mt-4">Map location</h2>
+            {latitude && (
+                <p>(Bạn đã chọn địa chỉ, tuy nhiên vẫn có thể đổi)</p>
+            )}
+            <LocationPicker
+                latitude={latitude}
+                longitude={longitude}
+                onChange={({ latitude, longitude }) => {
+                    setLatitude(latitude);
+                    setLongitude(longitude);
+                }}
             />
             
             {preInput('Photos', 'Fill your photos')}

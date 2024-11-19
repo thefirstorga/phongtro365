@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios'
 import { Link } from "react-router-dom";
 import MapComponent from '../components/MapComponent'
-import NewHousePage from "./NewHousePage";
 
 function IndexPage() {
 
@@ -16,7 +15,6 @@ function IndexPage() {
   return (
     <div>
       {/* <MapComponent /> */}
-      <NewHousePage />
       <div className="mt-8 grid gap-x-6 gap-y-8 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {places.length > 0 && places.map(place => (
           <Link to={'/place/' + place.id} key={place.id}>

@@ -85,7 +85,8 @@ async function cleanUnusedPhotos() {
 router.post('/places', (req, res) => {
     const {token} = req.cookies
     const {
-        title, address, addedPhotos, 
+        title, address, latitude, longitude,
+        addedPhotos, 
         description, perks, extraInfo, 
         area, duration, price
     } = req.body
@@ -96,7 +97,7 @@ router.post('/places', (req, res) => {
                 owner: {
                     connect: { id: userData.id } // Thay thế bằng id của User thực tế
                 },
-                title, address, 
+                title, address, latitude, longitude,
                 description, extraInfo, 
                 area, duration, price,
                 photos: {
@@ -237,7 +238,8 @@ router.get('/placedetail/:id', async (req, res) => {
 router.put('/places/:id', async (req, res) => {
     const { id } = req.params;
     const {
-        title, address, addedPhotos,
+        title, address, latitude, longitude,
+        addedPhotos,
         description, perks, extraInfo,
         area, duration
     } = req.body;
@@ -256,7 +258,7 @@ router.put('/places/:id', async (req, res) => {
             where: { id: parseInt(id, 10) },
             data: {
                 title,
-                address,
+                address, latitude, longitude,
                 description,
                 extraInfo,
                 area,

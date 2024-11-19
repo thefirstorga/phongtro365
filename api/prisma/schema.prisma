@@ -26,6 +26,8 @@ model Place {
   ownerId     Int
   title       String
   address     String
+  latitude    Decimal?
+  longitude   Decimal?
   area        Int // diện tích
   photos      PlacePhoto[]
   description String

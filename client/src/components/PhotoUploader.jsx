@@ -44,7 +44,7 @@ function PhotoUploader({addedPhotos, setAddedPhotos}) {
     }
     
   return (
-    <>
+    <div className='z-0'>
         <div className='flex gap-2'>
             <input type="text" value={photoLink}
                 onChange={ev => setPhotoLink(ev.target.value)}
@@ -53,8 +53,8 @@ function PhotoUploader({addedPhotos, setAddedPhotos}) {
             <button onClick={addPhotoByLink} className='bg-gray-200 px-4 rounded-2xl'>Add&nbsp;photo</button>
         </div>
         
-        <div className='mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
-            {addedPhotos.length >0 && addedPhotos.map(link => (
+        <div className='mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6 z-10'>
+            {addedPhotos.length > 0 && addedPhotos.map(link => (
                 <div className='h-32 flex relative' key={link}>
                     <img className='rounded-2xl w-full object-cover' src={'http://localhost:4000/post/uploads/'+link} alt="" />
                     <button onClick={(ev) => removePhoto(ev, link)} className='cursor-pointer absolute bottom-1 right-1 text-white bg-black bg-opacity-50 rounded-2xl p-2 '>
@@ -85,7 +85,7 @@ function PhotoUploader({addedPhotos, setAddedPhotos}) {
                 Upload
             </label>
         </div>
-    </>
+    </div>
   )
 }
 

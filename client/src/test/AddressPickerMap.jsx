@@ -5,16 +5,31 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import 'leaflet-control-geocoder';
 
+const HANOI_BOUNDS = [
+  [20.8000, 105.6000], // Tây Nam
+  [21.4000, 106.2000], // Đông Bắc
+];
+
 const Geocoder = () => {
     const map = useMap(); // Lấy đối tượng bản đồ từ React-Leaflet
     useEffect(() => {
       const geocoder = L.Control.geocoder({
-        defaultMarkGeocode: true,
+        defaultMarkGeocode: false,
       })
         .on('markgeocode', (e) => {
           const { bbox } = e.geocode;
           const bounds = L.latLngBounds(bbox.getSouthWest(), bbox.getNorthEast());
-          map.fitBounds(bounds); // Zoom đến vị trí được tìm thấy
+          const center = bounds.getCenter(); // Lấy tọa độ trung tâm của bounding box
+          if (
+            center.lat >= HANOI_BOUNDS[0][0] &&
+            center.lat <= HANOI_BOUNDS[1][0] &&
+            center.lng >= HANOI_BOUNDS[0][1] &&
+            center.lng <= HANOI_BOUNDS[1][1]
+          ) {
+            map.fitBounds(bounds);
+          } else {
+            alert('Vị trí ngoài khu vực Hà Nội');
+          }
         })
         .addTo(map); // Thêm geocoder vào bản đồ
   
@@ -36,10 +51,20 @@ const AddressPickerMap = ({initialPosition,  onSave, onClose }) => {
 
     const MapClickHandler = () => {
         useMapEvents({
-        click(e) {
-            const { lat, lng } = e.latlng;
-            setMarkerPosition([lat, lng]); // Cập nhật tọa độ marker
-        },
+          click(e) {
+              const { lat, lng } = e.latlng;
+              if (
+                lat >= HANOI_BOUNDS[0][0] &&
+                lat <= HANOI_BOUNDS[1][0] &&
+                lng >= HANOI_BOUNDS[0][1] &&
+                lng <= HANOI_BOUNDS[1][1]
+              ) {
+                setMarkerPosition([lat, lng]); // Cập nhật Marker
+              } else {
+                alert('Vị trí ngoài khu vực Hà Nội');
+              }
+        
+          },
         });
         return null;
     };
@@ -53,34 +78,37 @@ const AddressPickerMap = ({initialPosition,  onSave, onClose }) => {
 
 
     const mapCenter = initialPosition || [21.0285, 105.8542]; // Nếu không có marker, lấy tọa độ Hà Nội
-    const zoomLevel = initialPosition ? 17 : 13; // Zoom cao hơn khi có vị trí đã chọn    
-
+    const zoomLevel = initialPosition ? 17 : 13; // Zoom cao hơn khi có vị trí đã chọn
+    
     return (
         <div className="relative">
-        <MapContainer
-            center={mapCenter}
-            zoom={zoomLevel}
-            style={{ height: '600px', width: '100%' }}
-            className="border border-gray-200 shadow-lg rounded-lg"
-        >
-            <MapClickHandler />
-            {markerPosition && <Marker position={markerPosition} />}
-            <Geocoder />
-        </MapContainer>
-        <div className="flex justify-end space-x-2 mt-2">
-            <button
-            onClick={() => onSave(markerPosition)}
-            className="px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600"
-            >
-            Save
-            </button>
-            <button
-            onClick={onClose}
-            className="px-4 py-2 text-white bg-gray-500 rounded-md hover:bg-gray-600"
-            >
-            Close
-            </button>
-        </div>
+          <MapContainer
+              center={mapCenter}
+              zoom={zoomLevel}
+              style={{ height: '600px', width: '100%' }}
+              className="border border-gray-200 shadow-lg rounded-lg"
+              maxBounds={HANOI_BOUNDS} // Giới hạn bản đồ
+              maxBoundsViscosity={1.0} // Không cho kéo ra ngoài bounds
+          >
+              <MapClickHandler />
+              {markerPosition && <Marker position={markerPosition} />}
+              <Geocoder />
+              {/* <Geocoder onGeocode={(latlng) => setMarkerPosition([latlng.lat, latlng.lng])} /> */}
+          </MapContainer>
+          <div className="flex justify-end space-x-2 mt-2">
+              <button
+                onClick={() => onSave(markerPosition)}
+                className="px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600"
+              >
+              Save
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-white bg-gray-500 rounded-md hover:bg-gray-600"
+              >
+              Close
+              </button>
+          </div>
         </div>
     );
 };
