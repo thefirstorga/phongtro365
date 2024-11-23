@@ -240,7 +240,7 @@ router.put('/places/:id', async (req, res) => {
     const {
         title, address, latitude, longitude,
         addedPhotos,
-        description, perks, extraInfo,
+        description, perks, extraInfo, price,
         area, duration
     } = req.body;
 
@@ -261,7 +261,7 @@ router.put('/places/:id', async (req, res) => {
                 address, latitude, longitude,
                 description,
                 extraInfo,
-                area,
+                area, price,
                 duration,
                 photos: {
                     create: addedPhotos.map(photo => ({ url: photo })), // Thêm các ảnh mới
@@ -280,25 +280,42 @@ router.put('/places/:id', async (req, res) => {
 });
 
 
-router.get('/places' ,async (req, res) => {
-    const places = await prisma.place.findMany({
-        include: { photos: true, perks: true }
+// router.get('/places' ,async (req, res) => {
+//     const places = await prisma.place.findMany({
+//         include: { photos: true, perks: true }
+//       })
+
+//     res.json(places);
+// })
+
+router.get('/places', async (req, res) => {
+    try {
+      // Lấy danh sách tất cả các places
+      const places = await prisma.place.findMany({
+        include: { photos: true, perks: true },
       });
-    
-    // res.json({
-    //     ...place,
-    //     photoUrls: place.photos.map(photo => photo.url), // Tạo mảng `photoUrls` từ `photos`
-    //     perkNames : place.perks.map(perk => perk.perk)
-    // });
-    // omggg, hiểu tại sao sai rồi, vì places nó đang là 1 mảng, không phải object như trên kia
-
-    const result = places.map(place => ({
-        ...place,
-        photoUrls: place.photos.map(photo => photo.url),
-        perkNames: place.perks.map(perk => perk.perk)
-    }));
-
-    res.json(result);
-})
+  
+      // Tính số tiền nhỏ nhất và lớn nhất
+      const priceStats = await prisma.place.aggregate({
+        _min: {
+          price: true, // Trường 'price' là trường giá tiền trong database
+        },
+        _max: {
+          price: true,
+        },
+      });
+  
+      // Kết hợp dữ liệu và trả về JSON
+      res.json({
+        places,
+        minPrice: priceStats._min.price || 0, // Giá trị nhỏ nhất (nếu không có, trả về 0)
+        maxPrice: priceStats._max.price || 0, // Giá trị lớn nhất (nếu không có, trả về 0)
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình lấy dữ liệu' });
+    }
+  });
+  
 
 module.exports = router;

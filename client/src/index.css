@@ -21,3 +21,9 @@ button.primary{
     /* background-color: '#F53850'; */
     @apply bg-primary p-2 w-full text-white rounded-2xl
 }
+
+@layer utilities {
+    .scrollbar {
+        @apply scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100
+    }
+}
