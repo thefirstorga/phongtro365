@@ -209,11 +209,19 @@ router.get('/user-places', (req, res) => {
 
 router.get('/place/:id', async (req, res) => {
     const { id } = req.params;
-    const idInt = parseInt(id, 10)
     const place = await prisma.place.findUnique({
-      where: { id: idInt },
+      where: { id: parseInt(id, 10) },
       include: { 
         photos: true, perks: true, 
+        owner: {      // Lấy thông tin chủ trọ
+            select: {
+                id:true,
+                name: true,
+                avatar: true,
+                phone: true, 
+                zalo: true,
+            },
+        },
         bookings: {    // Lấy các booking liên quan
             include: {
                 invoices: {    // Lấy invoices liên quan tới booking

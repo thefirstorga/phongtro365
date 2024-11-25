@@ -197,6 +197,90 @@ router.post('/update-profile', async (req, res) => {
     }
 });
 
+router.get('/check-delete-account', async (req, res) => {
+    const { token } = req.cookies;
+    // const {token} = req.body
+
+    jwt.verify(token, jwtSecret, async (err, userData) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token không hợp lệ.' });
+        }
+
+        const userId = userData.id;
+
+        try {
+            // Kiểm tra nếu có Booking với status là PENDING liên quan đến user
+            const pendingBookings = await prisma.booking.findFirst({
+                where: {
+                    OR: [
+                        { renterId: userId, status: 'RENTED' }, // Người này đang thuê
+                        { place: { ownerId: userId }, status: 'RENTED' } // Người này là chủ trọ
+                    ],
+                },
+            });
+            
+            if (pendingBookings) {
+                return res.json({ result: false }); // koddc xóa
+            }
+
+            return res.json({ result: true }); //được xóa
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Có lỗi xảy ra khi kiểm tra điều kiện xóa tài khoản.' });
+        }
+    });
+});
+
+//hoặc dài dòng hơn:))), nhưng cách này thì sẽ giúp check chính xác là ai. Đó kiểu z
+// router.get('/check-delete-account', async (req, res) => {
+//     const { token } = req.cookies;
+//     // const {token} = req.body
+//     try {
+//       if (!token) {
+//         return res.status(401).json({ message: 'Token không tồn tại.' });
+//       }
+  
+//       // Xác thực token và lấy userId
+//       const userData = jwt.verify(token, jwtSecret);
+//       const userId = userData.id;
+      
+//     //   return res.json(userId)
+//       // Kiểm tra từ bảng Place
+//       const pendingBookings = await prisma.place.findFirst({
+//         where: {
+//           ownerId: userId, // Người dùng là chủ trọ
+//           bookings: {
+//             every: {
+//               status: 'RENTED', // Booking liên quan có trạng thái PENDING
+//             },
+//           },
+//         },
+//       });
+  
+//       // Kiểm tra nếu có booking đang PENDING
+//       if (pendingBookings) {
+//         return res.json({ result: false }); // Không thể xóa tài khoản
+//       }
+  
+//       // Kiểm tra nếu người dùng là renter với booking PENDING
+//       const renterPending = await prisma.booking.findFirst({
+//         where: {
+//           renterId: userId,
+//           status: 'RENTED',
+//         },
+//       });
+  
+//       if (renterPending) {
+//         return res.json({ result: false }); // Không thể xóa tài khoản
+//       }
+  
+//       return res.json({ result: true }); // Được phép xóa tài khoản
+//     } catch (error) {
+//       console.error(error);
+//       return res.status(500).json({ message: 'Có lỗi xảy ra khi kiểm tra điều kiện xóa tài khoản.' });
+//     }
+// });
+
 router.post('/delete-account', async (req, res) => {
     const { token } = req.cookies;
     const { password } = req.body;
@@ -242,5 +326,36 @@ router.post('/delete-account', async (req, res) => {
         }
     });
 });
+
+router.get('/profile/:id', async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const info = await prisma.user.findUnique({
+        where: { id: parseInt(id, 10) },
+        select: {
+          name: true,
+          avatar: true,
+          phone: true,
+          zalo: true,
+          places: {
+            include: {
+                photos: true
+            }
+          }
+        },
+      });
+  
+      if (!info) {
+        return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+      }
+  
+      res.json({ info });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Có lỗi xảy ra trong khi lấy thông tin người dùng' });
+    }
+  });
+  
 
 module.exports = router

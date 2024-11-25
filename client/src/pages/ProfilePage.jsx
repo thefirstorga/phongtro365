@@ -20,6 +20,7 @@ function ProfilePage() {
   });
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [checkToDelete, setCheckToDelete] = useState(false)
 
   // Cập nhật giá trị updatedInfo khi user được load
   useEffect(() => {
@@ -101,6 +102,25 @@ function ProfilePage() {
       alert(
         error.response?.data?.message || 'Có lỗi xảy ra khi thay đổi mật khẩu, vui lòng thử lại!'
       );
+    }
+  };
+
+  const checkDeleteAccountCondition = async () => {
+    try {
+        const response = await axios.get('/auth/check-delete-account');
+
+        // Kết quả từ API
+        if (response.data.result) {
+          setCheckToDelete(true)
+        } else {
+          setCheckToDelete(false)
+        }
+        
+        setShowDeletePopup(true)
+        console.log(response.data.result)
+    } catch (error) {
+        console.error('Lỗi khi kiểm tra điều kiện xóa tài khoản:', error);
+        alert('Không thể kiểm tra điều kiện xóa tài khoản.');
     }
   };
 
@@ -210,7 +230,7 @@ function ProfilePage() {
             Thay đổi Mật khẩu
           </button>
           <button
-            onClick={() => setShowDeletePopup(true)}
+            onClick={() => checkDeleteAccountCondition()}
             className="bg-red-700 text-white px-4 py-2 rounded-lg shadow"
           >
             Xóa Tài khoản
@@ -346,7 +366,7 @@ function ProfilePage() {
         </div>
       )}
 
-      {showDeletePopup && (
+      {showDeletePopup && checkToDelete && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
           onClick={handleClosePopup(setShowDeletePopup)}
@@ -376,6 +396,20 @@ function ProfilePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showDeletePopup && !checkToDelete && (
+        <div
+        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+        onClick={handleClosePopup(setShowDeletePopup)}
+      >
+        <div className="bg-white rounded-lg p-6 max-w-lg">
+          <h2 className="text-lg font-bold mb-4 text-red-500">Bạn không thể xóa tài khoản vào lúc này</h2>
+          <p className="text-gray-700 mb-4">
+            Bạn đang có người đang thuê, vui lòng liên hệ người thuê để hủy phòng trước khi xóa tài khoản!
+          </p>
+        </div>
+      </div>
       )}
     </div>
   );
