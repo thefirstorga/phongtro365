@@ -95,7 +95,7 @@ function IndexPage() {
   return (
     <div className="flex flex-col relative">
       {/* Phần tìm kiếm */}
-      <div className="sticky p-4 bg-gray-100 w-full rounded-2xl shadow-md" style={{top: '68.8px'}}>
+      <div className="sticky p-4 bg-gray-100 w-full rounded-2xl shadow-md" style={{top: '80px'}}>
         <p className="text-2xl font-bold mb-1">Tìm kiếm nhà</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4">
           {/* Dropdown chọn địa chỉ */}

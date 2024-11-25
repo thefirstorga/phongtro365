@@ -49,37 +49,49 @@ router.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
 //hàm bổ sung để xóa các ảnh thừa trong folder upload
 async function cleanUnusedPhotos() {
     try {
-      const photosPost = await prisma.placePhoto.findMany({
-        select: { url: true }
-      });
+        const photosPost = await prisma.placePhoto.findMany({
+            select: { url: true }
+        });
 
-      const photosInvoice = await prisma.invoicePhoto.findMany({
-        select: {url: true}
-      })
+        const photosInvoice = await prisma.invoicePhoto.findMany({
+            select: { url: true }
+        });
 
-      const photos = [...photosPost, ...photosInvoice]
-      
-      const uploadsFolder = path.join(parPath, 'uploads')
-      // Tạo một danh sách các file ảnh hiện có trong thư mục uploads
-      const filesInFolder = fs.readdirSync(uploadsFolder);
-      // Lấy tất cả các URL ảnh từ database thành một mảng
-      const photoUrlsInDatabase = photos.map(photo => path.basename(photo.url));
-      // Lọc những file không có trong database
-      const unusedFiles = filesInFolder.filter(file => !photoUrlsInDatabase.includes(file));
-      // Xóa những file không còn được sử dụng
-      unusedFiles.forEach(file => {
-        const filePath = path.join(uploadsFolder, file);
-        fs.unlinkSync(filePath);
-        // console.log(`Deleted unused photo: ${filePath}`);
-      });
-  
-      console.log('Cleanup completed successfully!');
+        const photosAvatar = await prisma.user.findMany({
+            select: { avatar: true }
+        });
+
+        // Hợp nhất các danh sách ảnh từ các bảng khác nhau
+        const photoUrlsInDatabase = [
+            ...photosPost.map(photo => path.basename(photo.url)), // Tên file từ placePhoto
+            ...photosInvoice.map(photo => path.basename(photo.url)), // Tên file từ invoicePhoto
+            ...photosAvatar
+                .filter(photo => photo.avatar) // Loại bỏ null hoặc undefined
+                .map(photo => path.basename(photo.avatar)) // Tên file từ user.avatar
+        ];
+
+        const uploadsFolder = path.join(parPath, 'uploads');
+        // Tạo một danh sách các file ảnh hiện có trong thư mục uploads
+        const filesInFolder = fs.readdirSync(uploadsFolder);
+
+        // Lọc những file không có trong database
+        const unusedFiles = filesInFolder.filter(file => !photoUrlsInDatabase.includes(file));
+
+        // Xóa những file không còn được sử dụng
+        unusedFiles.forEach(file => {
+            const filePath = path.join(uploadsFolder, file);
+            fs.unlinkSync(filePath);
+            console.log(`Deleted unused photo: ${filePath}`);
+        });
+
+        console.log('Cleanup completed successfully!');
     } catch (error) {
-      console.error('Error while cleaning up photos:', error);
+        console.error('Error while cleaning up photos:', error);
     } finally {
-      await prisma.$disconnect();
+        await prisma.$disconnect();
     }
 }
+
 
 
 router.post('/places', (req, res) => {

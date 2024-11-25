@@ -63,8 +63,6 @@ function PlacePage() {
         await axios.put('/booking/undo-not-rent-request', data)
         window.location.reload()
     }
-
-  
     // console.log(bookingDetail)
 
     let rentInfo = null
@@ -274,9 +272,9 @@ function PlacePage() {
         // </div>
         <div>
             {/* Content Based on Booking Status */}
-            <div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
+            {rentInfo && (<div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
                 {rentInfo}
-            </div>
+            </div>)}
             {/* Place Details Section */}
             <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
                 <div className='flex gap-4 items-center'>
@@ -304,6 +302,13 @@ function PlacePage() {
                 </div>
                 
                 <PlaceGallery place={place} />
+            </div>
+
+            <div className='mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
+                <div className='my-4'>
+                    <h2 className='font-semibold text-2xl'>Thông tin chủ nhà</h2>
+                    
+                </div>
             </div>
 
             {/* Place Description and Details */}
