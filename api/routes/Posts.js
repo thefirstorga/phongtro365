@@ -14,7 +14,8 @@ const path = require('path')
 const parPath = path.join(__dirname, '..')
 router.use('/uploads', express.static(path.join(parPath, 'uploads')))
 
-
+const bcrypt = require('bcryptjs')
+const bcryptSalt = bcrypt.genSaltSync(10)
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 router.use(cookieParser())
@@ -91,8 +92,6 @@ async function cleanUnusedPhotos() {
         await prisma.$disconnect();
     }
 }
-
-
 
 router.post('/places', (req, res) => {
     const {token} = req.cookies
@@ -300,14 +299,6 @@ router.put('/places/:id', async (req, res) => {
 });
 
 
-// router.get('/places' ,async (req, res) => {
-//     const places = await prisma.place.findMany({
-//         include: { photos: true, perks: true }
-//       })
-
-//     res.json(places);
-// })
-
 router.get('/places', async (req, res) => {
     try {
       // Lấy danh sách tất cả các places
@@ -335,7 +326,52 @@ router.get('/places', async (req, res) => {
       console.error(error);
       res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình lấy dữ liệu' });
     }
-  });
+});
+
+router.post('/delete-home/:placeId', async (req, res) => {
+    const { token } = req.cookies;
+    const {placeId} = req.params
+    const { password } = req.body;
+
+    if (!token) {
+        return res.status(401).json({ message: 'Token không tồn tại.' });
+    }
+
+    jwt.verify(token, jwtSecret, async (err, userData) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token không hợp lệ.' });
+        }
+
+        const userId = userData.id;
+
+        try {
+            // Lấy thông tin người dùng
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+            });
+
+            if (!user) {
+                return res.status(404).json({ message: 'Người dùng không tồn tại.' });
+            }
+
+            // Kiểm tra mật khẩu
+            const isPasswordMatch = bcrypt.compareSync(password, user.password);
+            if (!isPasswordMatch) {
+                return res.status(400).json({ message: 'Mật khẩu không chính xác.' });
+            }
+
+            // Xóa nhà
+            await prisma.place.delete({
+                where: { id: parseInt(placeId, 10) },
+            });
+
+            return res.status(200).json({ message: 'Nhà này đã được xóa thành công.' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Có lỗi xảy ra khi xóa nhà này.' });
+        }
+    });
+})
   
 
 module.exports = router;
