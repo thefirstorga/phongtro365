@@ -305,7 +305,7 @@ function PlacePage() {
             </div>
 
             {/* thông tin chủ trọ */}
-            <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
+            <div className="mt-4 bg-gray-100 group transition duration-300 px-8 py-8 rounded-lg shadow-md">
                 <div className="my-4">
                     <h2 className="font-semibold text-2xl text-gray-800 mb-6">Thông tin chủ nhà</h2>
 
@@ -316,19 +316,19 @@ function PlacePage() {
                         className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300 shadow-lg flex-shrink-0"
                     >
                         <img
-                        src={
-                            place.owner.avatar
-                            ? `http://localhost:4000/post/uploads/${place.owner.avatar}`
-                            : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
-                        }
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
+                            src={
+                                place.owner.avatar
+                                ? `http://localhost:4000/post/uploads/${place.owner.avatar}`
+                                : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
+                            }
+                            alt="Avatar"
+                            className="w-full h-full object-cover"
                         />
                     </a>
-                    <div className="ml-6">
+                    <div className="ml-4">
                         <a
-                        href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
-                        className="text-lg font-semibold text-gray-800 hover:underline"
+                            href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
+                            className="text-lg font-semibold text-gray-800 hover:underline"
                         >
                         {place.owner.name}
                         </a>
@@ -338,12 +338,12 @@ function PlacePage() {
                     {/* Hàng 2: Số điện thoại và Zalo */}
                     <div className="grid grid-cols-2 gap-6">
                         <div className="relative ml-8">
-                            <p className="text-gray-600 font-semibold">Số điện thoại</p>
+                            <p className="text-gray-600 font-semibold text-xl">Số điện thoại</p>
                             <div className="flex items-center">
                             <p className="text-gray-800 font-medium">{place.owner.phone}</p>
                             <button
                                 onClick={() => navigator.clipboard.writeText(place.owner.phone)}
-                                className="ml-2 text-gray-500 hover:text-gray-700"
+                                className="ml-2 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                 title="Copy số điện thoại"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
@@ -353,12 +353,12 @@ function PlacePage() {
                             </div>
                         </div>
                         <div className="relative">
-                            <p className="text-gray-600 font-semibold">Zalo</p>
+                            <p className="text-gray-600 font-semibold text-xl">Zalo</p>
                             <div className="flex items-center">
                             <p className="text-gray-800 font-medium">{place.owner.zalo}</p>
                             <button
                                 onClick={() => navigator.clipboard.writeText(place.owner.zalo)}
-                                className="ml-2 text-gray-500 hover:text-gray-700"
+                                className="ml-2 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                 title="Copy Zalo"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
