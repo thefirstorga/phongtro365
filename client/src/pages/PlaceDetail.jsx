@@ -10,6 +10,8 @@ function PlaceDetail() {
     const { id } = useParams();
     const [place, setPlace] = useState(null);
     const [redirect, setRedirect] = useState('');
+    const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
     let newBookingId = null;
 
     useEffect(() => {
@@ -177,13 +179,52 @@ function PlaceDetail() {
         )
     }
 
+    const deleteHome = async () => {
+        if (!confirmPassword) {
+          alert('Vui lòng nhập mật khẩu để xác nhận.');
+          return;
+        }
+    
+        try {
+          const response = await axios.post(
+            `/post/delete-home/${id}`,
+            {
+              password: confirmPassword, // Mật khẩu xác nhận từ người dùng
+            }
+          );
+    
+          alert(response.data.message || 'Nhà này đã được xóa thành công.');
+          window.location.href = '/account/places'; // Chuyển hướng về trang chủ hoặc trang đăng nhập
+        } catch (error) {
+          // Xử lý lỗi
+          alert(error.response?.data?.message || 'Có lỗi xảy ra khi xóa nhà này!');
+        }
+    };
+    
+      // Đóng popup khi nhấp ra ngoài
+    const handleClosePopup = (setPopupState) => (e) => {
+        if (e.target === e.currentTarget) {
+            setPopupState(false);
+        }
+    };
+
     return (
         <div>
             {/* Content Based on Booking Status */}
             <div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
                 {content}
             </div>
-            <div className='fixed right-12 bottom-12'>
+            <div className='fixed right-12 bottom-12 group'>
+                <button
+                    className="mb-3 flex gap-1 bg-red-600 text-white p-2 rounded-lg transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                    onClick={() => setShowDeletePopup(true)}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                    <p className="font-medium">Delete home</p>
+                </button>
+
                 <Link className='flex gap-1 bg-gray-600 text-white p-2 rounded-lg' to={'/account/places/' + id}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -191,6 +232,7 @@ function PlaceDetail() {
                     <p className='font-medium'>Edit home</p>
                 </Link>
             </div>
+            
             {/* Place Details Section */}
             <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
                 <div className='flex gap-4 items-center'>
@@ -243,6 +285,53 @@ function PlaceDetail() {
 
             {/* History section */}
             {historyRent}
+
+            {/* Delete popup*/}
+            {showDeletePopup && !bookingNow && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                    onClick={handleClosePopup(setShowDeletePopup)}
+                >
+                <div className="bg-white rounded-lg p-6 w-96">
+                    <h2 className="text-lg font-bold mb-4 text-red-500">Xác nhận xóa tài khoản</h2>
+                    <p className="text-gray-700 mb-4">
+                    Bạn có chắc chắn muốn xóa tài khoản không? Hành động này không thể hoàn tác.
+                    </p>
+                    <div className="mb-4">
+                    <label className="block text-gray-700">Nhập mật khẩu để xác nhận</label>
+                    <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg p-2"
+                        placeholder="Nhập mật khẩu của bạn"
+                    />
+                    </div>
+                    <div className="flex justify-end">
+                    <button
+                        onClick={deleteHome}
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                    >
+                        Xóa tài khoản
+                    </button>
+                    </div>
+                </div>
+                </div>
+            )}
+
+            {showDeletePopup && bookingNow && (
+                <div
+                className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                onClick={handleClosePopup(setShowDeletePopup)}
+            >
+                <div className="bg-white rounded-lg p-6 max-w-lg">
+                <h2 className="text-lg font-bold mb-4 text-red-500">Bạn không thể xóa tài khoản vào lúc này</h2>
+                <p className="text-gray-700 mb-4">
+                    Bạn đang có người đang thuê, vui lòng liên hệ người thuê để hủy phòng trước khi xóa tài khoản!
+                </p>
+                </div>
+            </div>
+            )}
         </div>
     );
 }

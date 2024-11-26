@@ -262,6 +262,9 @@ router.put('/not-rent-response', async (req, res) => {
     res.json(result)
 })
 
+
+  
+
 // hahaha, check xem được chưa nha
 // được không ta?
 module.exports = router;

@@ -14,54 +14,55 @@ model User {
   password String
   avatar   String?
   phone    String?
+  zalo     String?
   createAt DateTime  @default(now())
   updateAt DateTime  @updatedAt
-  places   Place[]
-  bookings Booking[]
+  places   Place[]   @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
+  bookings Booking[] @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
 }
 
 model Place {
   id          Int          @id @default(autoincrement())
-  owner       User         @relation(fields: [ownerId], references: [id])
+  owner       User         @relation("UserPlaces", fields: [ownerId], references: [id], onDelete: Cascade) // Khi xóa User, xóa Place
   ownerId     Int
   title       String
   address     String
   latitude    Decimal?
   longitude   Decimal?
   area        Int // diện tích
-  photos      PlacePhoto[]
+  photos      PlacePhoto[] @relation("PlacePhotos") // Khi xóa Place, xóa Photo liên quan
   description String
-  perks       PlacePerk[]
+  perks       PlacePerk[]  @relation("PlacePerks") // Khi xóa Place, xóa Perk liên quan
   extraInfo   String
   duration    Int // thời hạn hợp đồng
   price       Int
-  bookings    Booking[]
+  bookings    Booking[]    @relation("PlaceBookings") // Khi xóa Place, xóa Booking liên quan
 }
 
 model PlacePhoto {
   id      Int    @id @default(autoincrement())
   url     String
-  place   Place  @relation(fields: [placeId], references: [id])
+  place   Place  @relation("PlacePhotos", fields: [placeId], references: [id], onDelete: Cascade) // Khi xóa Place, xóa Photo liên quan
   placeId Int
 }
 
 model PlacePerk {
   id      String @id @default(uuid())
   perk    String
-  place   Place  @relation(fields: [placeId], references: [id])
+  place   Place  @relation("PlacePerks", fields: [placeId], references: [id], onDelete: Cascade) // Khi xóa Place, xóa Perk liên quan
   placeId Int
 }
 
 model Booking {
   id         Int           @id @default(autoincrement())
-  place      Place         @relation(fields: [placeId], references: [id])
+  place      Place         @relation("PlaceBookings", fields: [placeId], references: [id], onDelete: Cascade) // Khi xóa Place, xóa Booking
   placeId    Int
-  renter     User          @relation(fields: [renterId], references: [id])
+  renter     User          @relation("UserBookings", fields: [renterId], references: [id], onDelete: Cascade) // Khi xóa User, xóa Booking
   renterId   Int
   checkOut   DateTime?
   status     BookingStatus @default(PENDING)
   isContinue Boolean       @default(false)
-  invoices   Invoice[]
+  invoices   Invoice[]     @relation("BookingInvoices") // Khi xóa Booking, xóa Invoice liên quan
   createAt   DateTime      @default(now())
   updateAt   DateTime      @updatedAt
 }
@@ -75,11 +76,11 @@ enum BookingStatus {
 
 model Invoice {
   id          Int            @id @default(autoincrement())
-  booking     Booking        @relation(fields: [bookingId], references: [id])
+  booking     Booking        @relation("BookingInvoices", fields: [bookingId], references: [id], onDelete: Cascade) // Khi xóa Booking, xóa Invoice
   bookingId   Int
   title       String
   description String?
-  photos      InvoicePhoto[]
+  photos      InvoicePhoto[] @relation("InvoicePhotos") // Khi xóa Invoice, xóa Photo liên quan
   createdAt   DateTime       @default(now())
   updateAt    DateTime       @updatedAt
 }
@@ -87,6 +88,6 @@ model Invoice {
 model InvoicePhoto {
   id        Int     @id @default(autoincrement())
   url       String
-  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+  invoice   Invoice @relation("InvoicePhotos", fields: [invoiceId], references: [id], onDelete: Cascade) // Khi xóa Invoice, xóa Photo liên quan
   invoiceId Int
 }

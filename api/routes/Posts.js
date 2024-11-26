@@ -14,7 +14,8 @@ const path = require('path')
 const parPath = path.join(__dirname, '..')
 router.use('/uploads', express.static(path.join(parPath, 'uploads')))
 
-
+const bcrypt = require('bcryptjs')
+const bcryptSalt = bcrypt.genSaltSync(10)
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 router.use(cookieParser())
@@ -49,38 +50,48 @@ router.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
 //hàm bổ sung để xóa các ảnh thừa trong folder upload
 async function cleanUnusedPhotos() {
     try {
-      const photosPost = await prisma.placePhoto.findMany({
-        select: { url: true }
-      });
+        const photosPost = await prisma.placePhoto.findMany({
+            select: { url: true }
+        });
 
-      const photosInvoice = await prisma.invoicePhoto.findMany({
-        select: {url: true}
-      })
+        const photosInvoice = await prisma.invoicePhoto.findMany({
+            select: { url: true }
+        });
 
-      const photos = [...photosPost, ...photosInvoice]
-      
-      const uploadsFolder = path.join(parPath, 'uploads')
-      // Tạo một danh sách các file ảnh hiện có trong thư mục uploads
-      const filesInFolder = fs.readdirSync(uploadsFolder);
-      // Lấy tất cả các URL ảnh từ database thành một mảng
-      const photoUrlsInDatabase = photos.map(photo => path.basename(photo.url));
-      // Lọc những file không có trong database
-      const unusedFiles = filesInFolder.filter(file => !photoUrlsInDatabase.includes(file));
-      // Xóa những file không còn được sử dụng
-      unusedFiles.forEach(file => {
-        const filePath = path.join(uploadsFolder, file);
-        fs.unlinkSync(filePath);
-        // console.log(`Deleted unused photo: ${filePath}`);
-      });
-  
-      console.log('Cleanup completed successfully!');
+        const photosAvatar = await prisma.user.findMany({
+            select: { avatar: true }
+        });
+
+        // Hợp nhất các danh sách ảnh từ các bảng khác nhau
+        const photoUrlsInDatabase = [
+            ...photosPost.map(photo => path.basename(photo.url)), // Tên file từ placePhoto
+            ...photosInvoice.map(photo => path.basename(photo.url)), // Tên file từ invoicePhoto
+            ...photosAvatar
+                .filter(photo => photo.avatar) // Loại bỏ null hoặc undefined
+                .map(photo => path.basename(photo.avatar)) // Tên file từ user.avatar
+        ];
+
+        const uploadsFolder = path.join(parPath, 'uploads');
+        // Tạo một danh sách các file ảnh hiện có trong thư mục uploads
+        const filesInFolder = fs.readdirSync(uploadsFolder);
+
+        // Lọc những file không có trong database
+        const unusedFiles = filesInFolder.filter(file => !photoUrlsInDatabase.includes(file));
+
+        // Xóa những file không còn được sử dụng
+        unusedFiles.forEach(file => {
+            const filePath = path.join(uploadsFolder, file);
+            fs.unlinkSync(filePath);
+            console.log(`Deleted unused photo: ${filePath}`);
+        });
+
+        console.log('Cleanup completed successfully!');
     } catch (error) {
-      console.error('Error while cleaning up photos:', error);
+        console.error('Error while cleaning up photos:', error);
     } finally {
-      await prisma.$disconnect();
+        await prisma.$disconnect();
     }
 }
-
 
 router.post('/places', (req, res) => {
     const {token} = req.cookies
@@ -197,11 +208,19 @@ router.get('/user-places', (req, res) => {
 
 router.get('/place/:id', async (req, res) => {
     const { id } = req.params;
-    const idInt = parseInt(id, 10)
     const place = await prisma.place.findUnique({
-      where: { id: idInt },
+      where: { id: parseInt(id, 10) },
       include: { 
         photos: true, perks: true, 
+        owner: {      // Lấy thông tin chủ trọ
+            select: {
+                id:true,
+                name: true,
+                avatar: true,
+                phone: true, 
+                zalo: true,
+            },
+        },
         bookings: {    // Lấy các booking liên quan
             include: {
                 invoices: {    // Lấy invoices liên quan tới booking
@@ -280,14 +299,6 @@ router.put('/places/:id', async (req, res) => {
 });
 
 
-// router.get('/places' ,async (req, res) => {
-//     const places = await prisma.place.findMany({
-//         include: { photos: true, perks: true }
-//       })
-
-//     res.json(places);
-// })
-
 router.get('/places', async (req, res) => {
     try {
       // Lấy danh sách tất cả các places
@@ -315,7 +326,52 @@ router.get('/places', async (req, res) => {
       console.error(error);
       res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình lấy dữ liệu' });
     }
-  });
+});
+
+router.post('/delete-home/:placeId', async (req, res) => {
+    const { token } = req.cookies;
+    const {placeId} = req.params
+    const { password } = req.body;
+
+    if (!token) {
+        return res.status(401).json({ message: 'Token không tồn tại.' });
+    }
+
+    jwt.verify(token, jwtSecret, async (err, userData) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token không hợp lệ.' });
+        }
+
+        const userId = userData.id;
+
+        try {
+            // Lấy thông tin người dùng
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+            });
+
+            if (!user) {
+                return res.status(404).json({ message: 'Người dùng không tồn tại.' });
+            }
+
+            // Kiểm tra mật khẩu
+            const isPasswordMatch = bcrypt.compareSync(password, user.password);
+            if (!isPasswordMatch) {
+                return res.status(400).json({ message: 'Mật khẩu không chính xác.' });
+            }
+
+            // Xóa nhà
+            await prisma.place.delete({
+                where: { id: parseInt(placeId, 10) },
+            });
+
+            return res.status(200).json({ message: 'Nhà này đã được xóa thành công.' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Có lỗi xảy ra khi xóa nhà này.' });
+        }
+    });
+})
   
 
 module.exports = router;
