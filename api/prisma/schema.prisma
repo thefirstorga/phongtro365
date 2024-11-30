@@ -19,17 +19,43 @@ model Admin {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  name     String
-  email    String    @unique
-  password String
-  avatar   String?
-  phone    String?
-  zalo     String?
-  createAt DateTime  @default(now())
-  updateAt DateTime  @updatedAt
-  places   Place[]   @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
-  bookings Booking[] @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
+  id             Int        @id @default(autoincrement())
+  name           String
+  email          String     @unique
+  password       String
+  avatar         String?
+  phone          String?
+  zalo           String?
+  createAt       DateTime   @default(now())
+  updateAt       DateTime   @updatedAt
+  places         Place[]    @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
+  bookings       Booking[]  @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
+  reports        Report[]   @relation("UserReports") // Các báo cáo do người dùng gửi
+  status         UserStatus @default(ACTIVE) // Trạng thái người dùng
+  violationCount Int        @default(0) // Số lần vi phạm
+}
+
+enum UserStatus {
+  ACTIVE // Người dùng đang hoạt động
+  BLACKLISTED // Người dùng bị đưa vào danh sách đen
+  DEACTIVATED // Người dùng đã vô hiệu hóa tài khoản
+}
+
+model Report {
+  id         Int          @id @default(autoincrement())
+  reporter   User         @relation("UserReports", fields: [reporterId], references: [id], onDelete: Cascade) // Người gửi báo cáo
+  reporterId Int
+  place      Place        @relation("PlaceReports", fields: [placeId], references: [id], onDelete: Cascade) // Nhà bị báo cáo
+  placeId    Int
+  reason     String // Lý do báo cáo
+  status     ReportStatus @default(PENDING) // Trạng thái xử lý báo cáo
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+enum ReportStatus {
+  PENDING // Đang chờ xử lý
+  DONE
 }
 
 model Place {
@@ -47,7 +73,15 @@ model Place {
   extraInfo   String
   duration    Int // thời hạn hợp đồng
   price       Int
+  status      PlaceStatus  @default(SEE)
   bookings    Booking[]    @relation("PlaceBookings") // Khi xóa Place, xóa Booking liên quan
+  reports     Report[]     @relation("PlaceReports")
+}
+
+enum PlaceStatus {
+  SEE
+  HIDDEN
+  DELETE // xóa do report nhé
 }
 
 model PlacePhoto {

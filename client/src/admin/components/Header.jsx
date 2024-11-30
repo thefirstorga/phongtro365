@@ -110,18 +110,18 @@ function Header() {
                     Thêm admin
                   </Link>
                   <Link
-                    to="/admin"
+                    to="/admin/users"
                     className="block px-4 py-2 hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >
-                    Booking của bạn
+                    Danh sách users
                   </Link>
                   <Link
-                    to="/admin"
+                    to="/admin/reports"
                     className="block px-4 py-2 hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >
-                    Nhà của bạn
+                    Danh sách Reports
                   </Link>
                   <button
                     onClick={logout}

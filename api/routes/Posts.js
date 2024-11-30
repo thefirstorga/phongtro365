@@ -229,7 +229,8 @@ router.get('/place/:id', async (req, res) => {
                     }
                 }
             }
-        }
+        },
+        reports: true
     }
     });
     res.json({place})
@@ -369,6 +370,34 @@ router.post('/delete-home/:placeId', async (req, res) => {
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Có lỗi xảy ra khi xóa nhà này.' });
+        }
+    });
+})
+
+router.post('/add-report', async (req, res) => {
+    const {token} = req.cookies
+    const {reason, placeId} = req.body
+
+    jwt.verify(token, jwtSecret, async (err, userData) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token không hợp lệ.' });
+        }
+
+        const userId = userData.id;
+
+        try {
+            // Tạo report
+            await prisma.report.create({
+                data: {
+                    reporterId: userId,
+                    reason: reason,
+                    placeId: parseInt(placeId, 10)
+                }
+            });
+            return res.status(200).json({ message: 'Report đã được gửi cho admin' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Có lỗi xảy ra khi xóa tài khoản.' });
         }
     });
 })

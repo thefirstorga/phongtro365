@@ -108,7 +108,7 @@ function ProfileVisitPage() {
                 </div>
                 </div>
             </div>
-            </div>
+        </div>
         
         {/* Phần dưới */}
         <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">

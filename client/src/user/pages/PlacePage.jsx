@@ -15,6 +15,8 @@ function PlacePage() {
     const [place, setPlace] = useState(null);
     // bookingDetail là biến mà lưu state booking của người đang đăng nhập
     const [bookingDetail, setBookingDetail] = useState(null);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [reason, setReason] = useState('');
 
     // useEffect for fetching place data
     useEffect(() => {
@@ -35,6 +37,15 @@ function PlacePage() {
             setBookingDetail(userBooking);
         }
     }, [place?.bookings, user]);
+
+    // useEffect(() => {
+    //     if (place?.reports && user) {
+    //         const reported = place.reports.find(report => report.reporterId === user.id);
+    //         if (reported) {
+    //             setReason(reported.reason);
+    //         }
+    //     }
+    // }, [place?.reports, user]);
 
     async function continueRent(ev, bookingId, placeId) {
         ev.preventDefault();
@@ -72,10 +83,13 @@ function PlacePage() {
         </div>
     )
     let option = null
+    let reported = null
 
     if (!place && !bookingDetail) {
         return <div>Loading place data...</div>
     } else {
+        reported = place?.reports.find(report => report.reporterId === user.id)
+
         if(user.id === place.ownerId) {
             return <PlaceDetail/>
         }
@@ -226,50 +240,43 @@ function PlacePage() {
         }
     }
 
+    const handleReportClick = () => {
+        setIsPopupOpen(true);
+    };
+
+    const handleOutsideClick = (e) => {
+        if (e.target.id === 'popup-overlay') {
+            setIsPopupOpen(false);
+        }
+        
+    };
+
+    const handleSendReport = async () => {
+        if (!reason) {
+            alert('Vui lòng nhập lý do.');
+            return;
+        }
+        try {
+            // Gửi request xóa tài khoản
+            const response = await axios.post(
+              '/post/add-report',
+              {
+                reason: reason,
+                placeId: id
+              }
+            );
+      
+            // Hiển thị thông báo thành công và chuyển hướng
+            alert(response.data.message)
+            setIsPopupOpen(false); // Đóng popup sau khi gửi
+            setReason(''); // Xóa nội dung nhập
+          } catch (error) {
+            // Xử lý lỗi
+            alert(error.response?.data?.message || 'Có lỗi xảy ra khi xóa tài khoản!');
+          }
+    };
 
     return (
-        // <div className='mt-4 bg-gray-100 -mx-8 px-8 py-8 rounded-3xl'>
-        //     {/* Show booking status if it exists */}
-        //     {/* <div className='border-b-2'>
-        //         {rentInfo && rentInfo}
-        //     </div> */}
-        //     {rentInfo && (
-        //         <div className='border-b-2'>
-        //             {rentInfo && rentInfo}
-        //         </div>
-        //     )}
-        //     <h1 className='text-3xl mt-4'>{place.title}</h1>
-        //     <a className='flex gap-1 my-2 font-semibold underline' target='_blank' href={'https://maps.google.com/?q=' + place.address}>
-        //         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-        //             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-        //             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-        //         </svg>
-        //         {place.address}
-        //     </a>
-
-        //     <PlaceGallery place={place} />
-
-        //     <div className='mt-8 mb-8 grid gap-8 grid-cols-1 md:grid-cols-[2fr_1fr]'>
-        //         <div>
-        //             <div className='my-4'>
-        //                 <h2 className='font-semibold text-2xl'>Description</h2>
-        //                 {place.description}
-        //             </div>
-        //             Area: {place.area}<br />
-        //             Duration: {place.duration}<br />
-        //             Price: {place.price}
-        //         </div>
-        //         {bookingWidget}
-        //     </div>
-        //     <div className="bg-white -mx-8 px-8 py-8 border-t">
-        //         <div>
-        //             <h2 className='font-semibold text-2xl'>Extra Info</h2>
-        //         </div>
-        //         <div className='mb-4 mt-2 text-sm text-gray-800 leading-5'>
-        //             {place.extraInfo}
-        //         </div>
-        //     </div>
-        // </div>
         <div>
             {/* Content Based on Booking Status */}
             {rentInfo && (<div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
@@ -277,8 +284,14 @@ function PlacePage() {
             </div>)}
             {/* Place Details Section */}
             <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
-                <div className='flex gap-4 items-center'>
+                <div className='flex gap-4 items-center justify-between'>
                     <h1 className="text-3xl font-semibold text-gray-800">{place.title}</h1>
+                    <button className='flex gap-2 items-center' onClick={handleReportClick}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
+                        </svg>
+                        <p className='font-semibold text-lg'>Report</p>
+                    </button>
                 </div>
                 <div className='flex gap-6 my-2'>
                     <p className='flex gap-1 my-2 font-semibold'>
@@ -303,6 +316,53 @@ function PlacePage() {
                 
                 <PlaceGallery place={place} />
             </div>
+
+            {/* Report popup */}
+            {isPopupOpen && !reported && (
+                <div
+                    id="popup-overlay"
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    onClick={handleOutsideClick}
+                >
+                    <div className="bg-white p-6 rounded shadow-md w-96">
+                        <h2 className="text-xl font-semibold mb-4">Report reason</h2>
+                        <textarea
+                            className="w-full p-2 border rounded mb-4"
+                            placeholder="Enter your reason for reporting this house"
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                        />
+                        <div className="flex justify-end gap-4">
+                            <button
+                                className="px-4 py-2 bg-gray-200 rounded"
+                                onClick={() => setIsPopupOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-blue-500 text-white rounded"
+                                onClick={handleSendReport}
+                            >
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isPopupOpen && reported && (
+                <div
+                id="popup-overlay"
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                onClick={handleOutsideClick}
+            >
+                <div className="bg-white p-6 rounded shadow-md w-96">
+                    <h2 className="text-xl font-semibold mb-4">Report reason</h2>
+                    <h2 className="text-md">Bạn đã report nhà này với lý do:</h2>
+                    <h2 className="text-lg">{reported.reason}</h2>
+                </div>
+            </div>
+            )}
 
             {/* thông tin chủ trọ */}
             <div className="mt-4 bg-gray-100 group transition duration-300 px-8 py-8 rounded-lg shadow-md">
