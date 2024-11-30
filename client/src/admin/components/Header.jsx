@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { UserContext } from './UserContext';
+import { AdminContext } from './AdminContext';
 import axios from 'axios';
 
 function Header() {
-  const { user, setUser } = useContext(UserContext);
+  const { admin, setAdmin } = useContext(AdminContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef();
 
@@ -22,32 +22,30 @@ function Header() {
   }, []);
 
   async function logout() {
-    await axios.post('/auth/logout');
-    setUser(null); // Xóa thông tin user
+    await axios.post('/admin-api/logout');
+    setAdmin(null); // Xóa thông tin user
     setMenuOpen(false); // Đóng menu
-    window.location.href = '/';
+    window.location.href = '/admin';
   }
 
-  // Lấy phần cuối cùng của tên người dùng
-  const displayName = user?.name?.split(' ').pop();
 
   return (
     <div className="sticky top-0 bg-white z-20 border-b-2 shadow-sm h-20 flex items-center">
       <header className="w-full flex justify-between lg:px-36 md:px-8 sm:px-4 items-center">
         {/* Logo */}
-        <Link to={'/'} className="flex items-center gap-1">
+        <Link to={'/admin'} className="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-7">
             <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
           </svg>
-          <span className="font-bold text-xl">phongtro365</span>
+          <span className="font-bold text-xl">phongtro365-admin_page</span>
         </Link>
 
         {/* User Section */}
         <div ref={menuRef} className="relative">
           {/* Nếu chưa đăng nhập */}
-          {!user && (
+          {!admin && (
             <Link
-              to="/login"
+              to="/admin/login"
               className="flex items-center gap-2 border border-gray-300 rounded-full py-1 px-1 cursor-pointer"
             >
               <div className="bg-gray-500 text-white rounded-full border border-gray-500">
@@ -68,18 +66,14 @@ function Header() {
           )}
 
           {/* Nếu đã đăng nhập */}
-          {!!user && (
+          {!!admin && (
             <div>
               <div
                 className="flex items-center gap-2 border border-gray-300 rounded-full py-1 px-1 cursor-pointer relative"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
                 <img
-                  src={
-                    user?.avatar 
-                      ? `http://localhost:4000/post/uploads/${user.avatar}` 
-                      : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
-                  }
+                  src={'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'}
                   alt="Avatar"
                   className="rounded-full w-11 h-11 object-cover"
                 />
@@ -102,22 +96,28 @@ function Header() {
 
               {menuOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                  <div
+                    className="block px-4 py-2 hover:bg-gray-100 border-b-2"
+                    onClick={() => setMenuOpen(false)} // Đóng menu
+                  >
+                    {admin.email}
+                  </div>
                   <Link
-                    to="/account"
+                    to="/admin/register"
                     className="block px-4 py-2 hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >
-                    Trang cá nhân
+                    Thêm admin
                   </Link>
                   <Link
-                    to="/account/bookings"
+                    to="/admin"
                     className="block px-4 py-2 hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >
                     Booking của bạn
                   </Link>
                   <Link
-                    to="/account/places"
+                    to="/admin"
                     className="block px-4 py-2 hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >

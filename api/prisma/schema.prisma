@@ -7,6 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Admin {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  createBy      Admin?   @relation("CreatedAdmins", fields: [createById], references: [id]) // Self-relation
+  createById    Int? // ID của admin tạo bản ghi này
+  createdAdmins Admin[]  @relation("CreatedAdmins") // Danh sách các admin được tạo bởi admin này
+  createAt      DateTime @default(now())
+  updateAt      DateTime @updatedAt
+}
+
 model User {
   id       Int       @id @default(autoincrement())
   name     String

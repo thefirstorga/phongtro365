@@ -1,12 +1,10 @@
 import { Route, Routes } from 'react-router-dom'
-import './App.css'
 import IndexPage from './pages/IndexPage'
 import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
 import RegisterPage from './pages/RegisterPage'
 import axios from 'axios'
 import { UserContextProvider } from './components/UserContext'
-import { useEffect } from 'react'
 import ListHome from './pages/ListHome'
 import ProfilePage from './pages/ProfilePage'
 import PlacesPage from './pages/PlacesPage'
@@ -14,17 +12,11 @@ import PlacesFormPage from './pages/PlacesFormPage'
 import PlacePage from './pages/PlacePage'
 import BookingsPage from './pages/BookingsPage'
 import BookingPage from './pages/BookingPage'
-import PlaceDetail from './pages/PlaceDetail'
 import ProfileVisitPage from './pages/ProfileVisitPage'
 
 axios.defaults.baseURL = 'http://localhost:4000'
 axios.defaults.withCredentials = true
 function App() {
-//   useEffect(() => {
-//     if(!user) {
-//         axios.get('/profile')
-//     }
-// }, [])
 
   return (
     <UserContextProvider>
