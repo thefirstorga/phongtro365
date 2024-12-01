@@ -122,33 +122,68 @@ router.post('/delete-place/:placeId', async (req, res) => {
     const { placeId } = req.params;
 
     try {
-        // Cập nhật trạng thái của Place và Report
+        // Tìm kiếm Place
+        const place = await prisma.place.findUnique({
+            where: { id: parseInt(placeId) },
+            include: { owner: true }, // Bao gồm thông tin chủ nhà
+        });
+
+        if (!place) {
+            return res.status(404).json({ message: 'Place không tồn tại' });
+        }
+
+        // Cập nhật trạng thái của Place thành DELETE
         await prisma.place.update({
             where: { id: parseInt(placeId) },
             data: { status: 'DELETE' },
         });
 
+        // Cập nhật trạng thái các Report liên quan thành DONE
         await prisma.report.updateMany({
             where: { placeId: parseInt(placeId), status: 'PENDING' },
             data: { status: 'DONE' },
         });
 
-        // Lấy danh sách cập nhật
-        const updatedPendingReports = await prisma.place.findMany({
-            where: { status: 'SEE' }, // Nhà vẫn đang hiển thị (không phải DELETE)
+        // Xóa các booking có trạng thái PENDING
+        await prisma.booking.deleteMany({
+            where: { placeId: parseInt(placeId), status: 'PENDING' },
         });
 
-        const updatedNormalPlaces = await prisma.place.findMany({
-            where: { status: 'SEE' }, // Nhà bình thường (không bị báo cáo)
+        // Cập nhật các booking có trạng thái APPROVED thành RENTED
+        await prisma.booking.updateMany({
+            where: { placeId: parseInt(placeId), status: 'APPROVED' },
+            data: { 
+                status: 'RENTED',
+                checkOut: new Date()
+            },
+        });
+
+        // Tăng violationCount của chủ nhà và kiểm tra trạng thái BLACKLISTED
+        const newViolationCount = place.owner.violationCount + 1;
+        const newStatus = newViolationCount > 3 ? 'BLACKLISTED' : place.owner.status;
+
+        const updatedOwner = await prisma.user.update({
+            where: { id: place.ownerId },
+            data: {
+                violationCount: newViolationCount,
+                status: newStatus,
+            },
         });
 
         res.status(200).json({
-            message: 'Place đã được chuyển sang trạng thái DELETE và các Report đã được xử lý.',
-            updatedPendingReports,
-            updatedNormalPlaces,
+            message: 'Place đã được chuyển sang trạng thái DELETE, các Report đã được xử lý, và Booking đã được cập nhật.',
+            updatedPlace: {
+                id: place.id,
+                status: 'DELETE',
+            },
+            updatedOwner: {
+                id: updatedOwner.id,
+                violationCount: updatedOwner.violationCount,
+                status: updatedOwner.status,
+            },
         });
     } catch (error) {
-        console.error(error);
+        console.error('Error deleting place:', error);
         res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu.' });
     }
 });

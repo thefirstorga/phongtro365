@@ -17,6 +17,7 @@ function PlacePage() {
     const [bookingDetail, setBookingDetail] = useState(null);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [reason, setReason] = useState('');
+    const [showReportsPopup, setShowReportsPopup] = useState(false);
 
     // useEffect for fetching place data
     useEffect(() => {
@@ -33,19 +34,10 @@ function PlacePage() {
     // useEffect for checking booking details only after place data is loaded
     useEffect(() => {
         if (user && user.id && place?.bookings) {
-            const userBooking = place.bookings.find(booking => booking.renterId === user.id && booking.status !== 'RENTED');
+            const userBooking = place.bookings.find(booking => booking.renterId === user.id && (booking.status !== 'RENTED' && booking.status !== 'REJECTED'));
             setBookingDetail(userBooking);
         }
     }, [place?.bookings, user]);
-
-    // useEffect(() => {
-    //     if (place?.reports && user) {
-    //         const reported = place.reports.find(report => report.reporterId === user.id);
-    //         if (reported) {
-    //             setReason(reported.reason);
-    //         }
-    //     }
-    // }, [place?.reports, user]);
 
     async function continueRent(ev, bookingId, placeId) {
         ev.preventDefault();
@@ -84,16 +76,93 @@ function PlacePage() {
     )
     let option = null
     let reported = null
+    let reportInfo = null
 
     if (!place && !bookingDetail) {
         return <div>Loading place data...</div>
     } else {
+        let bookingNow = place.bookings.find(booking => booking.status === "APPROVED") || place.bookings.find(booking => booking.status === "WAIT")// dòng này tìm xem có cái nào approved không
         reported = place?.reports.find(report => report.reporterId === user.id)
+
+        if (place?.reports?.length > 0) {
+            const pendingReports = place.reports.filter((report) => report.status === 'PENDING');
+            const doneReports = place.reports.filter((report) => report.status === 'DONE');
+
+            if (doneReports.length > 0) {
+                if(bookingNow) {
+                    bookingWidget = null
+                    reportInfo = (
+                        <div>
+                            <h2 className="font-semibold text-2xl text-red-600">
+                                Ngôi nhà này đã bị admin đưa vào danh sách đen.
+                            </h2>
+                            <h2 className="font-semibold text-lg">
+                                Bạn đang thuê nhà này, vì vậy hãy nhanh chóng hoàn thành thủ tục hủy thuê phòng.
+                            </h2>
+                        </div>
+                    );
+                } else {
+                    bookingWidget = null
+                    reportInfo = (
+                        <div>
+                            <h2 className="font-semibold text-2xl text-red-600">
+                                Ngôi nhà này đã bị admin đưa vào danh sách đen và không thể booking.
+                            </h2>
+                        </div>
+                    );
+                }
+                
+            } 
+            else if (pendingReports.length > 0) {
+                reportInfo = (
+                    <div>
+                        <h2 className="font-semibold text-2xl text-primary mb-6">Lưu ý</h2>
+                        <button
+                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                            onClick={() => setShowReportsPopup(true)} // Mở popup
+                        >
+                            {`Ngôi nhà này có ${pendingReports.length} báo cáo đang chờ xử lý`}
+                        </button>
+
+                        {/* Popup hiển thị chi tiết các report */}
+                        {showReportsPopup && (
+                            <div
+                                id="popup-overlay"
+                                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                                onClick={(e) => {
+                                    if (e.target.id === 'popup-overlay') setShowReportsPopup(false); // Đóng popup khi bấm ra ngoài
+                                }}
+                            >
+                                <div className="bg-white p-6 rounded shadow-md w-96 max-h-[90%] overflow-y-auto">
+                                    <h2 className="text-xl font-semibold mb-4">Danh sách báo cáo</h2>
+                                    <ul className="space-y-4">
+                                        {pendingReports.map((report) => (
+                                            <li key={report.id} className="border-b pb-4">
+                                                <p><strong>Lý do:</strong> {report.reason}</p>
+                                                <p><strong>Người báo cáo:</strong> {report.reporter.name} ({report.reporter.email})</p>
+                                                <p><strong>Số điện thoại:</strong> {report.reporter.phone}</p>
+                                                <p><strong>Trạng thái:</strong> {report.status}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <button
+                                        className="mt-4 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                        onClick={() => setShowReportsPopup(false)} // Đóng popup
+                                    >
+                                        Đóng
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+        }
 
         if(user.id === place.ownerId) {
             return <PlaceDetail/>
         }
-        let bookingNow = place.bookings.find(booking => booking.status === "APPROVED") || place.bookings.find(booking => booking.status === "WAIT")// dòng này tìm xem có cái nào approved không
+        // let bookingNow = place.bookings.find(booking => booking.status === "APPROVED") || place.bookings.find(booking => booking.status === "WAIT")// dòng này tìm xem có cái nào approved không
         // console.log(bookingNow)
         if(place.bookings.length !== 0 && 
             bookingNow !== undefined 
@@ -193,28 +262,6 @@ function PlacePage() {
                 const startOfNextMonth = new Date(today.getFullYear(), today.getMonth() + monthsRemaining, 1);
                 const remainingDaysInMonth = differenceInDays(checkOutDate, startOfNextMonth);
 
-                // if(monthsRemaining === 0 
-                //     && bookingDetail.isContinue === false
-                // ) {
-                //     option = (
-                //         <div>
-                //             <p className="text-lg font-semibold text-gray-800">Bạn có thể chọn ở tiếp nhà này.</p>
-                //             <button onClick={(ev) => continueRent(ev, bookingDetail.id, id)} className="primary">Tiếp tục ở</button>
-                //             <button onClick={(ev) => notContinueRent(ev, bookingDetail.id)} className="mt-2 primary">Không tiếp tục ở</button>
-                //         </div>
-                //     )
-                //     console.log("option")
-                // } else if(bookingDetail.isContinue === true) {
-                //     option = (
-                //         <div>
-                //             <p className="text-lg font-semibold text-gray-800">
-                //                 Bạn đã xác nhận không ở tiếp nữa. <br />
-                //                 Bạn có thể hủy thuê nhà ở đây.
-                //             </p>
-                //         </div>
-                //     )
-                // }
-
                 rentInfo = (
                     <div>
                         <div className='bg-gray-200 p-6 mb-6 rounded-2xl'>
@@ -281,6 +328,9 @@ function PlacePage() {
             {/* Content Based on Booking Status */}
             {rentInfo && (<div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
                 {rentInfo}
+            </div>)}
+            {reportInfo && (<div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
+                {reportInfo}
             </div>)}
             {/* Place Details Section */}
             <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
@@ -352,16 +402,23 @@ function PlacePage() {
 
             {isPopupOpen && reported && (
                 <div
-                id="popup-overlay"
-                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-                onClick={handleOutsideClick}
-            >
-                <div className="bg-white p-6 rounded shadow-md w-96">
-                    <h2 className="text-xl font-semibold mb-4">Report reason</h2>
-                    <h2 className="text-md">Bạn đã report nhà này với lý do:</h2>
-                    <h2 className="text-lg">{reported.reason}</h2>
+                    id="popup-overlay"
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    onClick={handleOutsideClick}
+                >
+                    <div className="bg-white p-6 rounded shadow-md w-96">
+                        <h2 className="text-xl font-semibold mb-4">Report reason</h2>
+                        <h2 className="text-md">Bạn đã report nhà này</h2>
+                        <h2 className="text-md font-bold">Trạng thái:</h2>
+                        {reported.status === 'PENDING' ? (
+                            <p>Yêu cầu của bạn đang chờ.</p>
+                        ) : (
+                            <p>Yêu cầu của bạn đã được xử lý.</p>
+                        )}
+                        <h2 className="text-md font-bold">Nội dung:</h2>
+                        <h2 className="text-lg">{reported.reason}</h2>
+                    </div>
                 </div>
-            </div>
             )}
 
             {/* thông tin chủ trọ */}

@@ -115,6 +115,7 @@ model Booking {
 enum BookingStatus {
   PENDING
   APPROVED
+  REJECTED
   WAIT
   RENTED
 }

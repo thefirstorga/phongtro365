@@ -208,32 +208,56 @@ router.get('/user-places', (req, res) => {
 
 router.get('/place/:id', async (req, res) => {
     const { id } = req.params;
-    const place = await prisma.place.findUnique({
-      where: { id: parseInt(id, 10) },
-      include: { 
-        photos: true, perks: true, 
-        owner: {      // Lấy thông tin chủ trọ
-            select: {
-                id:true,
-                name: true,
-                avatar: true,
-                phone: true, 
-                zalo: true,
-            },
-        },
-        bookings: {    // Lấy các booking liên quan
+    try {
+        const place = await prisma.place.findUnique({
+            where: { id: parseInt(id, 10) },
             include: {
-                invoices: {    // Lấy invoices liên quan tới booking
+                photos: true,
+                perks: true,
+                owner: { // Lấy thông tin chủ trọ
+                    select: {
+                        id: true,
+                        name: true,
+                        avatar: true,
+                        phone: true,
+                        zalo: true,
+                    },
+                },
+                bookings: { // Lấy các booking liên quan
                     include: {
-                        photos: true  // Lấy ảnh của Invoice
-                    }
-                }
-            }
-        },
-        reports: true
+                        invoices: { // Lấy invoices liên quan tới booking
+                            include: {
+                                photos: true, // Lấy ảnh của Invoice
+                            },
+                        },
+                    },
+                },
+                reports: { // Bao gồm thông tin đầy đủ của người báo cáo
+                    include: {
+                        reporter: { // Lấy thông tin người báo cáo
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                avatar: true,
+                                phone: true,
+                                zalo: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (!place) {
+            return res.status(404).json({ message: 'Place không tồn tại' });
+        }
+
+        res.json({ place });
+    } catch (error) {
+        console.error('Error fetching place:', error);
+        res.status(500).json({ message: 'Lỗi khi lấy thông tin Place.' });
     }
-    });
-    res.json({place})
 });
 
 // rout này kha khá giống route ở trên, nhưng cái này phục vụ chức năng cho người chủ nhà
@@ -243,16 +267,27 @@ router.get('/placedetail/:id', async (req, res) => {
     const place = await prisma.place.findUnique({
       where: { id: parseInt(id, 10) },
       include: { 
-        photos: true, perks: true,
-        bookings: true
+        photos: true, 
+        perks: true,
+        bookings: true,
+        reports: { // Bao gồm thông tin đầy đủ của người báo cáo
+            include: {
+                reporter: { // Lấy thông tin người báo cáo
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                        phone: true,
+                        zalo: true,
+                    },
+                },
+            },
+        },
     }
     });
   
-    res.json({
-        ...place,
-        photoUrls: place.photos.map(photo => photo.url), // Tạo mảng `photoUrls` từ `photos`
-        perkNames : place.perks.map(perk => perk.perk)
-      });
+    res.json({ place });
 });
 
 router.put('/places/:id', async (req, res) => {
@@ -373,6 +408,38 @@ router.post('/delete-home/:placeId', async (req, res) => {
         }
     });
 })
+
+router.put('/hidden-home/:placeId', async (req, res) => {
+    const { placeId } = req.params;
+
+    try {
+        // Lấy thông tin hiện tại của Place
+        const place = await prisma.place.findUnique({
+            where: { id: parseInt(placeId) },
+        });
+
+        if (!place) {
+            return res.status(404).json({ message: 'Place không tồn tại' });
+        }
+
+        // Kiểm tra trạng thái hiện tại và chuyển đổi
+        const newStatus = place.status === 'SEE' ? 'HIDDEN' : 'SEE';
+
+        // Cập nhật trạng thái của Place
+        const updatedPlace = await prisma.place.update({
+            where: { id: parseInt(placeId) },
+            data: { status: newStatus },
+        });
+
+        res.status(200).json({
+            message: `Trạng thái của Place đã được chuyển đổi thành ${newStatus}.`,
+            updatedPlace,
+        });
+    } catch (error) {
+        console.error('Error updating place status:', error);
+        res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu.' });
+    }
+});
 
 router.post('/add-report', async (req, res) => {
     const {token} = req.cookies

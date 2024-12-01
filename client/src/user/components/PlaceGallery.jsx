@@ -15,7 +15,7 @@ function PlaceGallery({ place }) {
 
     if (showImagePopup) {
         popup = (
-            <div className="fixed inset-0 bg-black bg-opacity-50 w-full h-full flex items-center justify-center z-30" onClick={() => setShowImagePopup(false)}>
+            <div className="fixed inset-0 bg-black bg-opacity-50 w-full h-full flex items-center justify-center z-40" onClick={() => setShowImagePopup(false)}>
                 <div className="relative p-8 rounded-lg shadow-lg bg-white w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end">
                         <button onClick={() => setShowImagePopup(false)} className="text-white text-lg">
@@ -59,7 +59,7 @@ function PlaceGallery({ place }) {
     // }
     if (showAllPhotos) {
         allpopup = (
-            <div className="fixed inset-0 bg-black bg-opacity-50 w-full h-full flex items-center justify-center z-20" onClick={() => setShowAllPhotos(false)}>
+            <div className="fixed inset-0 bg-black bg-opacity-50 w-full h-full flex items-center justify-center z-30" onClick={() => setShowAllPhotos(false)}>
                 <div className="relative p-8 rounded-lg shadow-lg bg-white max-w-5xl" onClick={(e) => e.stopPropagation()}>
                     <div className="absolute top-4 right-4">
                         <button onClick={() => setShowAllPhotos(false)} className="flex gap-1 py-2 px-4 rounded-2xl shadow-sm shadow-gray-500 bg-white text-black">
