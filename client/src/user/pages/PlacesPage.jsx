@@ -10,22 +10,25 @@ function PlacesPage() {
     axios.get('/post/user-places')
       .then(({ data }) => {
         setPlaces(data);
-      })
+      });
   }, []);
 
-  // console.log(places.length); // Kiểm tra giá trị
+  // Phân loại places theo status
+  const placesSee = places.filter(place => place.status === 'SEE');
+  const placesHidden = places.filter(place => place.status === 'HIDDEN');
+  const placesDelete = places.filter(place => place.status === 'DELETE');
 
-  return (
-    <div>
-      <div className='text-center'>
-        <Link className='inline-flex gap-1 bg-primary text-white py-2 px-4 rounded-full' to={'/account/places/new'}>
-          Add new place
-        </Link>
-      </div>
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-8'>
-        {places.length >0 && (
-          places.map(place => (
-            <Link to={'/place/' + place.id} className='flex gap-4 mt-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500' key={place.id}>
+  const renderPlaces = (placesList, title) => (
+    <div className='mt-8'>
+      <h2 className='text-2xl font-bold mb-4'>{title}</h2>
+      {placesList.length > 0 ? (
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-8'>
+          {placesList.map(place => (
+            <Link
+              to={'/place/' + place.id}
+              className='flex gap-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500'
+              key={place.id}
+            >
               <div className='w-48 h-48'>
                 <PlaceImg place={place} />
               </div>
@@ -35,9 +38,28 @@ function PlacesPage() {
                 <p className='text-sm mt-4'>{place.bookings.length} người đang chờ duyệt</p>
               </div>
             </Link>
-          ))
-        )}
+          ))}
+        </div>
+      ) : (
+        <p>Không có nhà nào trong danh mục này.</p>
+      )}
+    </div>
+  );
+
+  return (
+    <div className='mb-4'>
+      <div className='fixed right-12 bottom-12 group z-30'>
+        <div className='text-center'>
+          <Link className='inline-flex gap-1 bg-primary text-white py-2 px-4 rounded-full' to={'/account/places/new'}>
+            Add new home
+          </Link>
+        </div>
       </div>
+
+      {/* Hiển thị các nhà theo từng status */}
+      {renderPlaces(placesSee, 'Các nhà của bạn')}
+      {renderPlaces(placesHidden, 'Các nhà bạn đang ẩn')}
+      {renderPlaces(placesDelete, 'Các nhà mà bạn đã bị vi phạm')}
     </div>
   );
 }

@@ -113,20 +113,57 @@ function ProfileVisitPage() {
         {/* Phần dưới */}
         <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
             <h2 className="font-semibold text-2xl text-gray-800 mb-6">Các nhà của {user.name}</h2>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-x-8 lg:mx-6'>
-                {user.places.length > 0 && (
-                    user.places.map(place => (
-                        <Link to={'/place/' + place.id} className='flex gap-4 mt-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500' key={place.id}>
-                            <div className='w-48 h-48 relative'>
-                                <PlaceImg place={place} />
-                            </div>
-                            <div className='py-3 pr-3 grow'>
-                                <h2 className='text-xl'>{place.title}</h2>
-                                <p className='border border-t-2 text-sm mt-2'>{place.description}</p>
-                            </div>
-                        </Link>
-                    ))
-                )}
+
+            {/* Hiển thị các nhà với trạng thái SEE */}
+            <div className='mb-8 bg-gray-200 p-4 rounded-xl'>
+                <h3 className="font-semibold text-xl text-gray-800 mb-4">Nhà đang hiển thị</h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-x-8 lg:mx-6'>
+                    {user.places.filter(place => place.status === 'SEE').length > 0 ? (
+                        user.places.filter(place => place.status === 'SEE').map(place => (
+                            <Link
+                                to={'/place/' + place.id}
+                                className='flex gap-4 mt-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500'
+                                key={place.id}
+                            >
+                                <div className='w-48 h-48 relative'>
+                                    <PlaceImg place={place} />
+                                </div>
+                                <div className='py-3 pr-3 grow'>
+                                    <h2 className='text-xl'>{place.title}</h2>
+                                    <p className='border border-t-2 text-sm mt-2'>{place.description}</p>
+                                </div>
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="text-gray-500">Không có nhà nào đang hiển thị.</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Hiển thị các nhà với trạng thái DELETE */}
+            <div className='mb-8 bg-gray-200 p-4 rounded-xl'>
+                <h3 className="font-semibold text-xl text-gray-800 mb-4">Nhà đã vi phạm</h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-x-8 lg:mx-6'>
+                    {user.places.filter(place => place.status === 'DELETE').length > 0 ? (
+                        user.places.filter(place => place.status === 'DELETE').map(place => (
+                            <Link
+                                to={'/place/' + place.id}
+                                className='flex gap-4 mt-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500'
+                                key={place.id}
+                            >
+                                <div className='w-48 h-48 relative'>
+                                    <PlaceImg place={place} />
+                                </div>
+                                <div className='py-3 pr-3 grow'>
+                                    <h2 className='text-xl'>{place.title}</h2>
+                                    <p className='border border-t-2 text-sm mt-2'>{place.description}</p>
+                                </div>
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="text-gray-500">Không có nhà nào bị xóa.</p>
+                    )}
+                </div>
             </div>
         </div>
     </div>

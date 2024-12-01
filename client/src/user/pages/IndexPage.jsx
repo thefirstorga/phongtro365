@@ -216,6 +216,24 @@ function IndexPage() {
   // Xử lý trường hợp dữ liệu chưa tải xong
   if (minPrice === null || maxPrice === null) {
     return <div>Đang tải dữ liệu...</div>;
+  } else if(minPrice === 0 && maxPrice === 0) {
+    return (
+      <div>
+        <div>
+          <p>Chào mừng bạn tới website của chúng tôi.</p>
+          <p>Bạn là người đầu tiên, vì vậy hãy tạo ít nhất 2 nhà để trang này hoạt động bình thường.</p>
+          <button
+            onClick={() => {
+              // Điều hướng đến trang thêm nhà
+              window.location.href = "/account/places/new";
+            }}
+            className="bg-blue-500 text-white p-2 rounded"
+          >
+            Thêm nhà mới
+          </button>
+        </div>
+      </div>
+    )
   }
   
 
@@ -234,11 +252,15 @@ function IndexPage() {
             className="p-2 border rounded w-full"
           />
           {/* Thanh chọn giá */}
-          <PriceRangeSelector
+          {minPrice<maxPrice ? (
+            <PriceRangeSelector
             minPrice={minPrice}
             maxPrice={maxPrice}
             onChange={handleRangeChange}
           />
+          ) : (
+            <p className="text-xl font-bold items-center justify-center">Các nhà này đang cùng 1 giá!</p>
+          )}
           {/* Nút hiển thị/ẩn bản đồ */}
           <button
             onClick={() => setIsMapVisible((prev) => !prev)}

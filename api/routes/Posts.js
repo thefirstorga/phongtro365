@@ -337,30 +337,39 @@ router.put('/places/:id', async (req, res) => {
 
 router.get('/places', async (req, res) => {
     try {
-      // Lấy danh sách tất cả các places
-      const places = await prisma.place.findMany({
-        include: { photos: true, perks: true },
-      });
-  
-      // Tính số tiền nhỏ nhất và lớn nhất
-      const priceStats = await prisma.place.aggregate({
-        _min: {
-          price: true, // Trường 'price' là trường giá tiền trong database
-        },
-        _max: {
-          price: true,
-        },
-      });
-  
-      // Kết hợp dữ liệu và trả về JSON
-      res.json({
-        places,
-        minPrice: priceStats._min.price || 0, // Giá trị nhỏ nhất (nếu không có, trả về 0)
-        maxPrice: priceStats._max.price || 0, // Giá trị lớn nhất (nếu không có, trả về 0)
-      });
+        // Lấy danh sách các places có status là SEE
+        const places = await prisma.place.findMany({
+            where: {
+                status: 'SEE', // Chỉ lấy places có status là SEE
+            },
+            include: {
+                photos: true,
+                perks: true,
+            },
+        });
+
+        // Tính toán _min và _max cho price chỉ với places có status là SEE
+        const priceStats = await prisma.place.aggregate({
+            where: {
+                status: 'SEE', // Chỉ tính toán trên các places có status là SEE
+            },
+            _min: {
+                price: true, // Trường 'price' là trường giá tiền
+            },
+            _max: {
+                price: true,
+            },
+        });
+
+        // Kết hợp dữ liệu và trả về JSON
+        res.json({
+            places,
+            minPrice: priceStats._min.price || 0, // Giá trị nhỏ nhất (nếu không có, trả về 0)
+            maxPrice: priceStats._max.price || 0, // Giá trị lớn nhất (nếu không có, trả về 0)
+        });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình lấy dữ liệu' });
+        console.error(error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình lấy dữ liệu' });
     }
 });
 

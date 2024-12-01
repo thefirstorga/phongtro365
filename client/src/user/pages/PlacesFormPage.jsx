@@ -83,7 +83,6 @@ function PlacesFormPage() {
 
   return (
     <div>
-        <AccountNav />
         <form onSubmit={savePlace}>
             {preInput('Title', 'Fill your title')}
             <input type='text' value={title}

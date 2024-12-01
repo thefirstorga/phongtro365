@@ -19,8 +19,11 @@ function ProfilePage() {
     confirmPassword: '',
   });
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [showStatusPopup, setShowStatusPopup] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [checkToDelete, setCheckToDelete] = useState(false)
+  const [checkToHide, setCheckToHide] = useState(false)
+  const [deleteLog, setDeleteLog] = useState('')
+  const [reason, setReason] = useState(null)
 
   // Cập nhật giá trị updatedInfo khi user được load
   useEffect(() => {
@@ -43,12 +46,30 @@ function ProfilePage() {
         const {data: filenames} = response
         setUpdatedAvatar(filenames[0])
     })
-}
+  }
 
   const saveAvatar = () => {
     axios.put('/auth/change-avatar', {id: user.id, updatedAvatar})
     setShowAvatarPopup(false);
     window.location.reload()
+  };
+
+  const handleHideAccount = () => {
+    const confirmation = window.confirm("Bạn có chắc muốn thay đổi trạng thái tài khoản không?");
+    if (confirmation) {
+        axios
+            .post('/auth/hide-account')
+            .then((response) => {
+                const { message, updatedUser } = response.data;
+                // Hiển thị thông báo từ backend
+                alert(message);
+                window.location.reload()
+            })
+            .catch((error) => {
+                console.error("Lỗi khi thay đổi trạng thái tài khoản:", error);
+                alert("Không thể thay đổi trạng thái tài khoản. Vui lòng thử lại.");
+            });
+    }
   };
 
   const handleInfoChange = (e) => {
@@ -105,19 +126,36 @@ function ProfilePage() {
     }
   };
 
+  const checkHideAccountCondition = async () => {
+    try {
+      const response = await axios.get('/auth/check-hide-account');
+      const { result, reason } = response.data;
+  
+      if (result) {
+        setCheckToHide(true);
+      } else {
+        setCheckToHide(false);
+        if (reason) {
+          setReason(reason);
+        }
+      }
+      setShowStatusPopup(true);
+  
+      console.log(response.data.result);
+    } catch (error) {
+      console.error('Lỗi khi kiểm tra điều kiện xóa tài khoản:', error);
+      alert('Không thể kiểm tra điều kiện xóa tài khoản.');
+    }
+  };
+
   const checkDeleteAccountCondition = async () => {
     try {
         const response = await axios.get('/auth/check-delete-account');
+        const { result, reason } = response.data;
 
-        // Kết quả từ API
-        if (response.data.result) {
-          setCheckToDelete(true)
-        } else {
-          setCheckToDelete(false)
-        }
-        
-        setShowDeletePopup(true)
-        console.log(response.data.result)
+        setDeleteLog(result)
+
+        setShowDeletePopup(true);
     } catch (error) {
         console.error('Lỗi khi kiểm tra điều kiện xóa tài khoản:', error);
         alert('Không thể kiểm tra điều kiện xóa tài khoản.');
@@ -173,6 +211,12 @@ function ProfilePage() {
 
   return (
     <div className="min-h-screen">
+      {console.log(user.status)}
+      {user.status === 'DEACTIVATED' && (
+        <div className="bg-red-500 text-white text-center py-4">
+          Tài khoản của bạn hiện đang bị ẩn. Người khác không thể tìm thấy bạn.
+        </div>
+      )}
       <div className="max-w-xl mx-auto bg-gray-100 rounded-lg shadow-lg py-6 px-16 mt-10">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Thông tin cá nhân</h1>
         {/* Avatar Section */}
@@ -216,25 +260,40 @@ function ProfilePage() {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end space-x-4">
-          <button
-            onClick={() => setShowInfoPopup(true)}
-            className="bg-primary text-white px-4 py-2 rounded-lg shadow"
-          >
-            Thay đổi Thông tin
-          </button>
-          <button
-            onClick={() => setShowPasswordPopup(true)}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg shadow"
-          >
-            Thay đổi Mật khẩu
-          </button>
-          <button
-            onClick={() => checkDeleteAccountCondition()}
-            className="bg-red-700 text-white px-4 py-2 rounded-lg shadow"
-          >
-            Xóa Tài khoản
-          </button>
+        <div className="mt-6 flex flex-wrap justify-end space-x-4">
+          {/* Nút hàng đầu */}
+          <div className="flex flex-wrap gap-4 mb-4">
+            <button
+              onClick={user.status === 'DEACTIVATED' ? handleHideAccount : () => checkHideAccountCondition()}
+              className={`${
+                user.status === 'DEACTIVATED' ? 'bg-green-500' : 'bg-gray-500'
+              } text-white px-4 py-2 rounded-lg shadow`}
+            >
+              {user.status === 'DEACTIVATED' ? 'Hiển thị tài khoản' : 'Ẩn tài khoản'}
+            </button>
+            <button
+              onClick={() => setShowInfoPopup(true)}
+              className="bg-primary text-white px-4 py-2 rounded-lg shadow"
+            >
+              Thay đổi Thông tin
+            </button>
+          </div>
+
+          {/* Nút hàng thứ hai */}
+          <div className="flex flex-wrap gap-4">
+            <button
+              onClick={() => setShowPasswordPopup(true)}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg shadow"
+            >
+              Thay đổi Mật khẩu
+            </button>
+            <button
+              onClick={() => checkDeleteAccountCondition()}
+              className="bg-red-700 text-white px-4 py-2 rounded-lg shadow"
+            >
+              Xóa Tài khoản
+            </button>
+          </div>
         </div>
       </div>
 
@@ -366,7 +425,7 @@ function ProfilePage() {
         </div>
       )}
 
-      {showDeletePopup && checkToDelete && (
+      {showDeletePopup && deleteLog == 'CAN_DELETE' && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
           onClick={handleClosePopup(setShowDeletePopup)}
@@ -398,19 +457,73 @@ function ProfilePage() {
         </div>
       )}
 
-      {showDeletePopup && !checkToDelete && (
+      {showDeletePopup && deleteLog == 'CANNOT_DELETE_YET' && (
         <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-        onClick={handleClosePopup(setShowDeletePopup)}
-      >
-        <div className="bg-white rounded-lg p-6 max-w-lg">
-          <h2 className="text-lg font-bold mb-4 text-red-500">Bạn không thể xóa tài khoản vào lúc này</h2>
-          <p className="text-gray-700 mb-4">
-            Bạn đang có người đang thuê, vui lòng liên hệ người thuê để hủy phòng trước khi xóa tài khoản!
-          </p>
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={handleClosePopup(setShowDeletePopup)}
+        >
+          <div className="bg-white rounded-lg p-6 max-w-lg">
+            <h2 className="text-lg font-bold mb-4 text-red-500">Bạn chưa thể xóa tài khoản vào lúc này</h2>
+            <p className="text-gray-700 mb-4">
+              Hiện tại bạn đang có người đang thuê, hoặc đang đi thuê, hoặc 1 nhà nào đó của bạn đang có report chưa xử lý!
+            </p>
+          </div>
         </div>
-      </div>
       )}
+
+      {showDeletePopup && deleteLog == 'CANNOT_DELETE' && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={handleClosePopup(setShowDeletePopup)}
+        >
+          <div className="bg-white rounded-lg p-6 max-w-lg">
+            <h2 className="text-lg font-bold mb-4 text-red-500">Bạn KHÔNG THỂ XÓA TÀI KHOẢN NÀY</h2>
+            <p className="text-gray-700 text-lg">
+              Bạn đã có nhà bị vi phạm, vì vậy bạn KHÔNG THỂ XÓA TÀI KHOẢN NÀY.
+            </p>
+            <p className="text-gray-700 mb-4">
+              Bạn có thể lựa chọn ẩn tài khoản.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {showStatusPopup && checkToHide && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={handleClosePopup(setShowStatusPopup)}
+        >
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h2 className="text-lg font-bold mb-4 text-red-500">Xác nhận ẩn tài khoản</h2>
+            <p className="text-gray-700 mb-4">
+              Bạn có chắc chắn muốn ẩn tài khoản không?
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={handleHideAccount}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+              >
+                Ẩn tài khoản
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showStatusPopup && !checkToHide && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={handleClosePopup(setShowStatusPopup)}
+        >
+          <div className="bg-white rounded-lg p-6 max-w-lg">
+            <h2 className="text-lg font-bold mb-4 text-red-500">Bạn không thể ẩn tài khoản vào lúc này</h2>
+            <p className="text-gray-700 mb-4">
+              {reason}
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
