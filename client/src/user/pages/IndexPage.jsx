@@ -14,7 +14,7 @@ function IndexPage() {
   const [isMapVisible, setIsMapVisible] = useState(false); // Trạng thái hiển thị bản đồ
 
   useEffect(() => {
-    // Gọi API để lấy danh sách places và min/max price
+    // Gọi API để lấy danh sách places và min/max price 
     axios.get("/post/places").then((response) => {
       const { places, minPrice, maxPrice } = response.data;
 

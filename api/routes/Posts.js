@@ -333,14 +333,17 @@ router.put('/places/:id', async (req, res) => {
         res.status(500).json({ error: "Something went wrong while updating the place." });
     }
 });
-
+ 
 
 router.get('/places', async (req, res) => {
     try {
-        // Lấy danh sách các places có status là SEE
+        // Lấy danh sách các places có status là SEE và thuộc về người dùng có trạng thái ACTIVE
         const places = await prisma.place.findMany({
             where: {
                 status: 'SEE', // Chỉ lấy places có status là SEE
+                owner: {
+                    status: 'ACTIVE', // Chỉ lấy places của chủ nhà có trạng thái ACTIVE
+                },
             },
             include: {
                 photos: true,
@@ -348,10 +351,13 @@ router.get('/places', async (req, res) => {
             },
         });
 
-        // Tính toán _min và _max cho price chỉ với places có status là SEE
+        // Tính toán _min và _max cho price chỉ với places có status là SEE và thuộc về chủ nhà ACTIVE
         const priceStats = await prisma.place.aggregate({
             where: {
                 status: 'SEE', // Chỉ tính toán trên các places có status là SEE
+                owner: {
+                    status: 'ACTIVE', // Chỉ tính toán trên places của chủ nhà ACTIVE
+                },
             },
             _min: {
                 price: true, // Trường 'price' là trường giá tiền

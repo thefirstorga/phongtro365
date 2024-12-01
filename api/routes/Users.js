@@ -25,36 +25,95 @@ router.get('/', async (req,res) => {
 })
 
 router.post('/register', async (req, res) => {
-    const {name, email, password} = req.body
-    const newUser = await prisma.user.create({
-        data: {
-            name,
-            email,
-            password: bcrypt.hashSync(password, bcryptSalt)
+    const { name, email, password } = req.body;
+
+    try {
+        // Kiểm tra nếu email đã tồn tại
+        const existingUser = await prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (existingUser) {
+            return res.status(400).json({
+                error: 'Email này đã được sử dụng. Vui lòng đăng nhập để truy cập.',
+            });
         }
-    })
-    res.json(newUser)
-})
+
+        // Tạo người dùng mới
+        const newUser = await prisma.user.create({
+            data: {
+                name,
+                email,
+                password: bcrypt.hashSync(password, bcryptSalt),
+            },
+        });
+
+        res.status(201).json({
+            message: 'Registration successful!',
+            user: {
+                id: newUser.id,
+                name: newUser.name,
+                email: newUser.email,
+            },
+        });
+    } catch (error) {
+        console.error('Error during registration:', error);
+        res.status(500).json({
+            error: 'Có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.',
+        });
+    }
+});
 
 router.post('/login', async (req, res) => {
-    const {email, password} = req.body
-    const userDoc = await prisma.user.findUnique({
-        where: {email: email}
-    })
-    if(userDoc) {
-        const passOk = bcrypt.compareSync(password, userDoc.password)
-        if(passOk) {
-            jwt.sign({email:userDoc.email, id:userDoc.id}, jwtSecret, {}, (err, token) => {
-                if(err) throw err
-                res.cookie('token', token).json(userDoc)
-            })
-        } else {
-            res.status(422).json('pass not ok')
+    const { email, password } = req.body;
+
+    try {
+        // Kiểm tra xem email có tồn tại không
+        const userDoc = await prisma.user.findUnique({
+            where: { email: email },
+        });
+
+        if (!userDoc) {
+            return res.status(404).json({
+                error: 'Email không tồn tại. Vui lòng đăng ký tài khoản mới.',
+            });
         }
-    } else {
-        res.json('not found')
+
+        // Kiểm tra trạng thái tài khoản
+        if (userDoc.status === 'BLACKLISTED') {
+            return res.status(403).json({
+                error: 'Tài khoản của bạn đã bị khóa vĩnh viễn.',
+                status: 'BLACKLISTED', // Trả về trạng thái BLACKLISTED
+            });
+        }
+
+        // Kiểm tra mật khẩu
+        const passOk = bcrypt.compareSync(password, userDoc.password);
+        if (!passOk) {
+            return res.status(401).json({
+                error: 'Mật khẩu không đúng. Vui lòng thử lại.',
+            });
+        }
+
+        // Tạo token JWT
+        jwt.sign({ email: userDoc.email, id: userDoc.id }, jwtSecret, {}, (err, token) => {
+            if (err) throw err;
+            res.cookie('token', token).json({
+                message: 'Đăng nhập thành công.',
+                user: {
+                    id: userDoc.id,
+                    name: userDoc.name,
+                    email: userDoc.email,
+                    status: userDoc.status, // Trả về trạng thái tài khoản
+                },
+            });
+        });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ error: 'Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.' });
     }
-})
+});
+
 
 router.get('/profile', (req,res) => {
     const {token} = req.cookies
