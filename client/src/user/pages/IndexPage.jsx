@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import PriceRangeSelector from "../components/PriceRangeSelector";
 import MapIndexPage from "../components/MapIndexPage";
+import { BASE_URL } from "../../config";
 
 function IndexPage() {
   const [places, setPlaces] = useState([]); // Tất cả places từ API
@@ -221,7 +222,7 @@ function IndexPage() {
       <div>
         <div>
           <p>Chào mừng bạn tới website của chúng tôi.</p>
-          <p>Bạn là người đầu tiên, vì vậy hãy tạo ít nhất 2 nhà để trang này hoạt động bình thường.</p>
+          <p>Bạn là người đầu tiên, vì vậy hãy tạo nhà để sử dụng website.</p>
           <button
             onClick={() => {
               // Điều hướng đến trang thêm nhà
@@ -289,7 +290,7 @@ function IndexPage() {
                     <img
                       className="rounded-2xl object-cover aspect-square"
                       src={
-                        "http://localhost:4000/post/uploads/" + place.photos[0]?.url
+                        BASE_URL + place.photos[0]?.url
                       }
                       alt=""
                     />

@@ -3,6 +3,7 @@ import { MapContainer, Marker,useMap, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import 'leaflet-control-geocoder';
+import { BASE_URL } from '../../config';
 
 const Geocoder = () => {
     const map = useMap(); // Lấy đối tượng bản đồ từ React-Leaflet
@@ -51,7 +52,7 @@ function MapIndexPage({ places }) {
                             <div style={{ textAlign: 'center' }}>
                                 <img
                                     src={
-                                        "http://localhost:4000/post/uploads/" + place.photos[0]?.url
+                                        BASE_URL + place.photos[0]?.url
                                       }
                                     alt="house"
                                     style={{ width: '80px', height: '50px', borderRadius: '4px' }}

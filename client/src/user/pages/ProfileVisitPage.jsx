@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
 import PlaceImg from '../components/PlaceImg';
+import { BASE_URL } from '../../config';
 
 function ProfileVisitPage() {
     const { id } = useParams();
@@ -40,7 +41,7 @@ function ProfileVisitPage() {
                     <img
                     src={
                         user.avatar
-                        ? `http://localhost:4000/post/uploads/${user.avatar}`
+                        ? BASE_URL + user.avatar
                         : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
                     }
                     alt="Avatar"

@@ -3,6 +3,7 @@ import { MapContainer, Marker, useMap, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import 'leaflet-control-geocoder';
+import { BASE_URL } from '../../config';
 
 const Geocoder = () => {
   const map = useMap(); // Lấy đối tượng bản đồ từ React-Leaflet
@@ -65,10 +66,6 @@ const MapComponent = ({ places }) => {
                   zoom={13}
                   style={{ height: '600px', width: '100%' }}
               >
-                  {/* <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                  /> */}
                   <Geocoder />
                   {places.map((place, index) =>
                       place.latitude && place.longitude ? (
@@ -76,7 +73,7 @@ const MapComponent = ({ places }) => {
                               <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={true}>
                                   <div style={{ textAlign: 'center' }}>
                                       <img
-                                          src={'http://localhost:4000/post/uploads/' + place.photos[0].url}
+                                          src={BASE_URL + place.photos[0].url}
                                           alt="house"
                                           style={{ width: '80px', height: '50px', borderRadius: '4px' }}
                                       />
@@ -100,49 +97,3 @@ const MapComponent = ({ places }) => {
 };
 
 export default MapComponent;
-
-// import React from 'react';
-// import { MapContainer, TileLayer, Marker, Tooltip } from 'react-leaflet';
-
-// function MapComponent({ places }) {
-//     if (!places || places.length === 0) {
-//         return <p>Không có dữ liệu để hiển thị bản đồ.</p>;
-//     }
-
-//     // Default position nếu không có tọa độ
-//     const defaultPosition = [10.762622, 106.660172]; // Tọa độ TP. Hồ Chí Minh
-
-//     return (
-//         <MapContainer
-//             center={places[0]?.latitude ? [places[0].latitude, places[0].longitude] : defaultPosition}
-//             zoom={13}
-//             style={{ height: '500px', width: '100%' }}
-//         >
-//             <TileLayer
-//                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-//                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-//             />
-//             {places.map((place, index) =>
-//                 place.latitude && place.longitude ? (
-//                     <Marker key={index} position={[place.latitude, place.longitude]}>
-//                         <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={false}>
-//                             <div style={{ textAlign: 'center' }}>
-//                                 <img
-//                                     src={place.image}
-//                                     alt="house"
-//                                     style={{ width: '80px', height: '50px', borderRadius: '4px' }}
-//                                 />
-//                                 <p style={{ margin: '5px 0', fontSize: '12px', fontWeight: 'bold' }}>
-//                                     {place.address}
-//                                 </p>
-//                             </div>
-//                         </Tooltip>
-//                     </Marker>
-//                 ) : null
-//             )}
-//         </MapContainer>
-//     );
-// }
-
-// export default MapComponent;
-

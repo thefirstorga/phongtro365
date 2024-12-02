@@ -8,6 +8,7 @@ import PlaceDetail from './PlaceDetail';
 import { differenceInCalendarMonths, differenceInDays, format } from 'date-fns';
 import InvoiceDetailRenter from '../components/InvoiceDetailRenter';
 import MapComponent from '../components/MapComponent';
+import { BASE_URL } from '../../config';
 
 function PlacePage() {
     const { id } = useParams();
@@ -435,7 +436,7 @@ function PlacePage() {
                         <img
                             src={
                                 place.owner.avatar
-                                ? `http://localhost:4000/post/uploads/${place.owner.avatar}`
+                                ? BASE_URL+place.owner.avatar
                                 : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
                             }
                             alt="Avatar"

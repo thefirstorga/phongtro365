@@ -34,7 +34,7 @@
 //         >
 //             <img
 //                 className={`${className} transition-transform duration-500`}
-//                 src={'http://localhost:4000/post/uploads/' + place.photos[currentIndex].url}
+//                 src={BASE_URL + place.photos[currentIndex].url}
 //                 alt=""
 //             />
 
@@ -78,6 +78,7 @@
 
 // ở đây fix được rồi nha:))). Hơi ảo
 import React, { useState } from 'react';
+import { BASE_URL } from '../../config';
 
 function PlaceImg({ place, className = null }) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -116,7 +117,7 @@ function PlaceImg({ place, className = null }) {
         >
             <img
                 className={`${className} transition-transform duration-500`}
-                src={'http://localhost:4000/post/uploads/' + place.photos[currentIndex].url}
+                src={BASE_URL + place.photos[currentIndex].url}
                 alt="Place"
             />
 

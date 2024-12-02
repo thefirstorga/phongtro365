@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BASE_URL } from '../../config';
 
 function PlaceGallery({ place }) {
     const [showAllPhotos, setShowAllPhotos] = useState(false);
@@ -26,37 +27,13 @@ function PlaceGallery({ place }) {
                     </div>
                     <div className="overflow-auto max-h-screen shadow-md shadow-gray-500">
                         {/* Display selected image with larger size and scrollable if too big */}
-                        <img src={'http://localhost:4000/post/uploads/' + selectedImage} alt="Selected" className="w-full max-h-full object-contain" />
+                        <img src={BASE_URL + selectedImage} alt="Selected" className="w-full max-h-full object-contain" />
                     </div>
                 </div>
             </div>
         );
     }
 
-    // if (showAllPhotos) {
-    //     return (
-    //         <div className="fixed inset-0 bg-black bg-opacity-50 w-full h-full flex items-center justify-center" onClick={() => setShowAllPhotos(false)}>
-    //             <div className="p-8 rounded-lg shadow-lg" onClick={(e) => e.stopPropagation()}>
-    //                 <div className="p-8 grid gap-4">
-    //                     <div>
-    //                         <button onClick={() => setShowAllPhotos(false)} className="fixed right-12 top-8 flex gap-1 py-2 px-4 rounded-2xl shadow-sm shadow-gray-500 bg-white text-black">
-    //                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-    //                                 <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-    //                             </svg>
-    //                             Close photos
-    //                         </button>
-    //                     </div>
-    //                     {place?.photos?.length > 0 && place.photos.map((photo, index) => (
-    //                         <div key={index} className="cursor-pointer" onClick={() => openImagePopup(photo.url)}>
-    //                             {/* Make images smaller */}
-    //                             <img src={'http://localhost:4000/post/uploads/' + photo.url} alt="" className="max-w-[600px] max-h-[600px] object-cover rounded-lg shadow-md" />
-    //                         </div>
-    //                     ))}
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     );
-    // }
     if (showAllPhotos) {
         allpopup = (
             <div className="fixed inset-0 bg-black bg-opacity-50 w-full h-full flex items-center justify-center z-30" onClick={() => setShowAllPhotos(false)}>
@@ -74,7 +51,7 @@ function PlaceGallery({ place }) {
                         {place?.photos?.length > 0 && place.photos.map((photo, index) => (
                             <div key={index} className="cursor-pointer mb-4" onClick={() => openImagePopup(photo.url)}>
                                 {/* Make images smaller */}
-                                <img src={'http://localhost:4000/post/uploads/' + photo.url} alt="" className="max-w-[600px] max-h-[600px] object-cover rounded-lg shadow-md shadow-gray-300" />
+                                <img src={BASE_URL + photo.url} alt="" className="max-w-[600px] max-h-[600px] object-cover rounded-lg shadow-md shadow-gray-300" />
                             </div>
                         ))}
                     </div>
@@ -92,20 +69,20 @@ function PlaceGallery({ place }) {
                 <div>
                     {place.photos?.[0] && (
                         <div className="cursor-pointer" onClick={() => openImagePopup(place.photos[0].url)}>
-                            <img className="aspect-square object-cover" src={'http://localhost:4000/post/uploads/' + place.photos[0].url} alt="" />
+                            <img className="aspect-square object-cover" src={BASE_URL + place.photos[0].url} alt="" />
                         </div>
                     )}
                 </div>
                 <div className="grid">
                     {place.photos?.[1] && (
                         <div className="cursor-pointer" onClick={() => openImagePopup(place.photos[1].url)}>
-                            <img className="aspect-square object-cover" src={'http://localhost:4000/post/uploads/' + place.photos[1].url} alt="" />
+                            <img className="aspect-square object-cover" src={BASE_URL + place.photos[1].url} alt="" />
                         </div>
                     )}
                     <div className="overflow-hidden">
                         {place.photos?.[2] && (
                             <div className="cursor-pointer" onClick={() => openImagePopup(place.photos[2].url)}>
-                                <img className="aspect-square object-cover relative top-2" src={'http://localhost:4000/post/uploads/' + place.photos[2].url} alt="" />
+                                <img className="aspect-square object-cover relative top-2" src={BASE_URL + place.photos[2].url} alt="" />
                             </div>
                         )}
                     </div>

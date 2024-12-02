@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
+import { BASE_URL } from '../../config';
 
 function InvoiceDetailRenter({ bookingId }) {
     const [showForm, setShowForm] = useState(false);
@@ -68,10 +69,10 @@ function InvoiceDetailRenter({ bookingId }) {
                             {selectedInvoice.photos?.map(photo => (
                                 <div key={photo.id} className="relative">
                                     <img
-                                        src={`http://localhost:4000/post/uploads/${photo.url}`}
+                                        src={BASE_URL+photo.url}
                                         alt={photo.url}
                                         className="w-full h-32 object-cover rounded-lg cursor-pointer"
-                                        onClick={() => openImageModal(`http://localhost:4000/post/uploads/${photo.url}`)}  // Open modal when image is clicked
+                                        onClick={() => openImageModal(BASE_URL+photo.url)}  // Open modal when image is clicked
                                     />
                                 </div>
                             ))}

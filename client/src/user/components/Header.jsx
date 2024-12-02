@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import axios from 'axios';
+import { BASE_URL } from '../../config';
 
 function Header() {
   const { user, setUser } = useContext(UserContext);
@@ -73,9 +74,9 @@ function Header() {
                 onClick={() => setMenuOpen(!menuOpen)}
               >
                 <img
-                  src={
+                  src={ 
                     user?.avatar 
-                      ? `http://localhost:4000/post/uploads/${user.avatar}` 
+                      ? BASE_URL + user.avatar
                       : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
                   }
                   alt="Avatar"

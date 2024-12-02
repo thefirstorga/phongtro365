@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { UserContext } from '../components/UserContext';
 import axios from 'axios'
+import { BASE_URL } from '../../config';
 
 function ProfilePage() {
   const { ready, user, setUser } = useContext(UserContext);
@@ -226,7 +227,7 @@ function ProfilePage() {
               <img
                 src={
                   user?.avatar 
-                    ? `http://localhost:4000/post/uploads/${user.avatar}` 
+                    ? BASE_URL+user.avatar
                     : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
                 }
                 alt="Avatar"
@@ -305,7 +306,7 @@ function ProfilePage() {
         >
           <div className="bg-white rounded-lg p-6 w-96">
             <h2 className="text-lg font-bold mb-4">Thay đổi Avatar</h2>
-            <img className='rounded-2xl w-full object-cover m-2' src={'http://localhost:4000/post/uploads/'+updatedAvatar} alt="" />
+            <img className='rounded-2xl w-full object-cover m-2' src={BASE_URL+updatedAvatar} alt="" />
             {!updatedAvatar && (<label className='h-32 cursor-pointer flex items-center justify-center gap-1 border bg-transparent rounded-2xl p-2'>
                 <input type="file" multiple className='hidden' onChange={uploadPhoto}/>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">

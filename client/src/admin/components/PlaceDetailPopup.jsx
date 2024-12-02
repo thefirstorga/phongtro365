@@ -1,6 +1,7 @@
 import React from 'react';
 import MapComponent from '../../user/components/MapComponent';
 import PlaceGallery from '../../user/components/PlaceGallery';
+import { BASE_URL } from '../../config';
 
 const PlaceDetailsPopup = ({ place, onClose }) => {
     if (!place) return null;
@@ -60,7 +61,7 @@ const PlaceDetailsPopup = ({ place, onClose }) => {
                                 <img
                                     src={
                                         place.owner.avatar
-                                            ? `http://localhost:4000/post/uploads/${place.owner.avatar}`
+                                            ? BASE_URL + place.owner.avatar
                                             : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
                                     }
                                     alt="Avatar"
