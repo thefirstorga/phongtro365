@@ -99,7 +99,7 @@ function PlacePage() {
                     reportInfo = (
                         <div>
                             <h2 className="font-semibold text-2xl text-red-600">
-                                Ngôi nhà này đã bị admin đưa vào danh sách đen.
+                                Nhà này đã bị admin đưa vào danh sách đen.
                             </h2>
                             <h2 className="font-semibold text-lg">
                                 Bạn đang thuê nhà này, vì vậy hãy nhanh chóng hoàn thành thủ tục hủy thuê phòng.
@@ -111,7 +111,7 @@ function PlacePage() {
                     reportInfo = (
                         <div>
                             <h2 className="font-semibold text-2xl text-red-600">
-                                Ngôi nhà này đã bị admin đưa vào danh sách đen và không thể booking.
+                                Nhà này đã bị admin đưa vào danh sách đen và không thể booking.
                             </h2>
                         </div>
                     );
@@ -126,7 +126,7 @@ function PlacePage() {
                             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                             onClick={() => setShowReportsPopup(true)} // Mở popup
                         >
-                            {`Ngôi nhà này có ${pendingReports.length} báo cáo đang chờ xử lý`}
+                            {`Nhà này có ${pendingReports.length} báo cáo đang chờ xử lý`}
                         </button>
 
                         {/* Popup hiển thị chi tiết các report */}
@@ -331,10 +331,10 @@ function PlacePage() {
     return (
         <div>
             {/* Content Based on Booking Status */}
-            {rentInfo && (<div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
+            {rentInfo && (<div className='mt-2 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
                 {rentInfo}
             </div>)}
-            {reportInfo && (<div className='mt-10 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
+            {reportInfo && (<div className='mt-2 bg-gray-100 px-8 py-8 rounded-lg shadow-md'>
                 {reportInfo}
             </div>)}
             {/* Place Details Section */}
@@ -462,7 +462,7 @@ function PlacePage() {
                         <div className="relative ml-8">
                             <p className="text-gray-600 font-semibold text-xl">Số điện thoại</p>
                             <div className="flex items-center">
-                            <p className="text-gray-800 font-medium">{place.owner.phone}</p>
+                            <p className="text-gray-800 font-medium">{place.owner.phone ? place.owner.phone : 'Chưa cập nhật'}</p>
                             <button
                                 onClick={() => navigator.clipboard.writeText(place.owner.phone)}
                                 className="ml-2 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -477,7 +477,7 @@ function PlacePage() {
                         <div className="relative">
                             <p className="text-gray-600 font-semibold text-xl">Zalo</p>
                             <div className="flex items-center">
-                            <p className="text-gray-800 font-medium">{place.owner.zalo}</p>
+                            <p className="text-gray-800 font-medium">{place.owner.zalo ? place.owner.zalo : 'Chưa cập nhật'}</p>
                             <button
                                 onClick={() => navigator.clipboard.writeText(place.owner.zalo)}
                                 className="ml-2 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -489,6 +489,10 @@ function PlacePage() {
                             </button>
                             </div>
                         </div>
+                    </div>
+                    <div className='ml-8 border-t-2 my-2'>
+                        <div className='text-gray-600 font-semibold text-lg'>Tham gia từ {new Date(place.owner.createAt).toLocaleDateString('vi-VN')}</div>
+                        <div className='text-gray-600 font-semibold text-md'>Vi phạm: {place.owner.violationCount}</div>
                     </div>
                 </div>
             </div>
@@ -503,7 +507,7 @@ function PlacePage() {
                     </div>
                     <p className='font-bold inline'>Giá:</p> {place.price} <br />
                     <p className='font-bold inline'>Diện tích:</p> {place.area}<br />
-                    <p className='font-bold inline'>Thời hạn hợp đồng:</p> {place.duration}<br />
+                    <p className='font-bold inline'>Thời hạn hợp đồng:</p> {place.duration} tháng<br />
                     <div className='border-b-4 my-2'></div>
                     <p className='font-bold inline'>Ngày đăng:</p> {new Date(place.createAt).toLocaleDateString()} <br />
                     <p className='font-bold inline'>Ngày chỉnh sửa gần nhất:</p> {new Date(place.updateAt).toLocaleDateString()} 

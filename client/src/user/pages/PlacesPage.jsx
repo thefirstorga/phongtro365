@@ -60,7 +60,7 @@ function PlacesPage() {
   );
 
   return (
-    <div className='mb-4'>
+    <div className='mb-4 lg:mx-16'>
       <div className='fixed right-12 bottom-12 group z-30'>
         <div className='text-center'>
           <button

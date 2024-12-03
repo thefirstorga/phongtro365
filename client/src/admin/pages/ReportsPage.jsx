@@ -81,7 +81,7 @@ function ReportsPage() {
 
     return (
         <div>
-            <h1 className="text-2xl font-bold mb-4">Danh sách nhà đang bị report</h1>
+            <h1 className="text-2xl font-bold my-4">Danh sách nhà đang bị report</h1>
             {/* Phần hiển thị nhà bị report (PENDING) */}
             {pendingReports.length > 0 ? (
                 <div className="space-y-4">
@@ -96,7 +96,7 @@ function ReportsPage() {
                                     {place.title}
                                 </h2>
                                 <p>Địa chỉ: {place.address}</p>
-                                <p>Số lượng report đang chờ xử lý: {place.pendingReportCount}</p>
+                                <p>Số người report: {place.pendingReportCount}</p>
                             </div>
                             {/* Các nút hành động */}
                             <div className="flex gap-4">
@@ -110,7 +110,7 @@ function ReportsPage() {
                                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                                     onClick={() => handleDeletePlace(place.id)}
                                 >
-                                    Xóa ngôi nhà
+                                    Xóa nhà này
                                 </button>
                                 <button
                                     className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
@@ -126,7 +126,7 @@ function ReportsPage() {
                 <p>Không có nhà nào đang bị báo cáo.</p>
             )}
 
-            <h1 className="text-2xl font-bold mt-8 mb-4">Danh sách nhà bình thường</h1>
+            <h1 className="text-2xl font-bold mt-8 mb-4">Danh sách nhà đang hoạt động</h1>
             {/* Phần hiển thị nhà bình thường */}
             {normalPlaces.length > 0 ? (
                 <div className="space-y-4">

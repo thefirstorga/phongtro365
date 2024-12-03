@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import PhotoUploader from '../components/PhotoUploader'
 import Perks from '../components/Perks'
 import axios from 'axios'
-import AccountNav from '../components/AccountNav'
 import LocationPicker from '../components/LocationPicker'
 import { Navigate, useParams } from 'react-router-dom'
 

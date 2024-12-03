@@ -37,8 +37,11 @@ function PlaceDetail() {
     }
 
     async function deleteAllBooking() {
-        if(window.confirm('Bạn có chắc chắn muốn xóa tất cả?'))
+        if(window.confirm('Bạn có chắc chắn muốn xóa tất cả?')) {
             await axios.post('/booking/delete-all-booking', id)
+            window.location.reload()
+        }
+
     }
 
     async function acceptBooking(bookingId) {

@@ -33,7 +33,7 @@ function Header() {
     <div className="sticky top-0 bg-white z-20 border-b-2 shadow-sm h-20 flex items-center">
       <header className="w-full flex justify-between lg:px-36 md:px-8 sm:px-4 items-center">
         {/* Logo */}
-        <Link to={'/admin'} className="flex items-center gap-1">
+        <Link to={'/admin/users'} className="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-7">
             <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
           </svg>
@@ -103,7 +103,7 @@ function Header() {
                     {admin.email}
                   </div>
                   <Link
-                    to="/admin/register"
+                    to="/admin"
                     className="block px-4 py-2 hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >

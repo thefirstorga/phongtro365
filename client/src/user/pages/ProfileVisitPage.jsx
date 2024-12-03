@@ -58,7 +58,7 @@ function ProfileVisitPage() {
                 <div className="relative ml-8">
                     <p className="text-gray-800 font-semibold text-2xl">Số điện thoại</p>
                     <div className="flex items-center">
-                    <p className="text-gray-800 font-medium">{user.phone}</p>
+                    <p className="text-gray-800 font-medium">{user.phone ? user.phone : 'Chưa cập nhật'}</p>
                     <button
                         onClick={() => navigator.clipboard.writeText(user.phone)}
                         className="ml-2 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -84,7 +84,7 @@ function ProfileVisitPage() {
                 <div className="relative">
                     <p className="text-gray-800 font-semibold text-2xl">Zalo</p>
                     <div className="flex items-center">
-                    <p className="text-gray-800 font-medium">{user.zalo}</p>
+                    <p className="text-gray-800 font-medium">{user.zalo ? user.zalo : 'Chưa cập nhật'}</p>
                     <button
                         onClick={() => navigator.clipboard.writeText(user.zalo)}
                         className="ml-2 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -108,6 +108,10 @@ function ProfileVisitPage() {
                     </div>
                 </div>
                 </div>
+                <div className='ml-8 border-t-2 my-2'>
+                    <div className='text-gray-600 font-semibold text-lg'>Tham gia từ {new Date(user.createAt).toLocaleDateString('vi-VN')}</div>
+                    <div className='text-gray-600 font-semibold text-md'>Vi phạm: {user.violationCount}</div>
+                </div>
             </div>
         </div>
         
@@ -117,7 +121,7 @@ function ProfileVisitPage() {
 
             {/* Hiển thị các nhà với trạng thái SEE */}
             <div className='mb-8 bg-gray-200 p-4 rounded-xl'>
-                <h3 className="font-semibold text-xl text-gray-800 mb-4">Nhà đang hiển thị</h3>
+                <h3 className="font-semibold text-xl text-gray-800 mb-4">Nhà đang hoạt động ({user.places.filter((place) => place.status === 'SEE').length})</h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-x-8 lg:mx-6'>
                     {user.places.filter(place => place.status === 'SEE').length > 0 ? (
                         user.places.filter(place => place.status === 'SEE').map(place => (
@@ -131,6 +135,7 @@ function ProfileVisitPage() {
                                 </div>
                                 <div className='py-3 pr-3 grow'>
                                     <h2 className='text-xl'>{place.title}</h2>
+                                    <h2 className='text-lg'>{place.address}</h2>
                                     <p className='border border-t-2 text-sm mt-2'>{place.description}</p>
                                 </div>
                             </Link>
@@ -156,7 +161,8 @@ function ProfileVisitPage() {
                                     <PlaceImg place={place} />
                                 </div>
                                 <div className='py-3 pr-3 grow'>
-                                    <h2 className='text-xl'>{place.title}</h2>
+                                    <p className='text-xl border-b-4'>{place.title}</p>
+                                    <p className='text-md'>{place.address}</p>
                                     <p className='border border-t-2 text-sm mt-2'>{place.description}</p>
                                 </div>
                             </Link>

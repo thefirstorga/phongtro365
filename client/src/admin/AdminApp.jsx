@@ -8,7 +8,7 @@ import IndexPage from "./pages/IndexPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReportsPage from "./pages/ReportsPage";
-import UsersPage from './pages/UsersPage'
+import UsersPage from "./pages/UsersPage";
 
 axios.defaults.baseURL = "http://localhost:4000";
 axios.defaults.withCredentials = true;
@@ -18,16 +18,12 @@ function AdminApp() {
     <AdminContextProvider>
       <Routes>
         <Route path="/admin" element={<Layout />}>
-          <Route index element={<IndexPage />} />
+          <Route index element={
+            <ProtectedRoute>
+              <RegisterPage />
+            </ProtectedRoute>
+          } />
           <Route path="login" element={<LoginPage />} />
-          <Route
-            path="register"
-            element={
-              <ProtectedRoute>
-                <RegisterPage />
-              </ProtectedRoute>
-            }
-          />
           <Route path="reports" element={
             <ProtectedRoute>
               <ReportsPage />

@@ -120,10 +120,10 @@ router.get('/profile', (req,res) => {
     if(token) {
         jwt.verify(token, jwtSecret, {} , async (err, userData) => {
             if(err) throw err
-            const {name, email, id, avatar, phone, zalo, status} = await prisma.user.findUnique({
+            const {name, email, id, avatar, phone, zalo, status, createdAt, violationCount} = await prisma.user.findUnique({
                 where: {id: userData.id}
             })
-            res.json({name, email, id, avatar, phone, zalo, status})
+            res.json({name, email, id, avatar, phone, zalo, status, createdAt, violationCount})
         })
     } else {
         res.json(null) 
@@ -490,6 +490,8 @@ router.get('/profile/:id', async (req, res) => {
           avatar: true,
           phone: true,
           zalo: true,
+          createAt: true, 
+          violationCount: true,
           places: {
             include: {
                 photos: true

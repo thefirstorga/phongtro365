@@ -221,6 +221,8 @@ router.get('/place/:id', async (req, res) => {
                         avatar: true,
                         phone: true,
                         zalo: true,
+                        violationCount: true,
+                        createAt: true
                     },
                 },
                 bookings: { // Lấy các booking liên quan

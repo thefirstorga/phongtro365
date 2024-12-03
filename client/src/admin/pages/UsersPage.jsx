@@ -31,18 +31,23 @@ function UsersPage() {
 
       {/* Active Users */}
       <section className="mb-8">
-        <h2 className="text-2xl font-medium mb-4">Người dùng bình thường </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activeUsers.map(user => (
             <div key={user.id} className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-all">
               <div className="flex items-center space-x-4">
-                <img
-                  src={user.avatar ? BASE_URL + user.avatar : 'https://via.placeholder.com/150'}
-                  alt={user.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
+                <a 
+                  href={`/profile/${user.id}`} target="_blank"
+                >
+                  <img
+                    src={user.avatar ? BASE_URL + user.avatar : 'https://via.placeholder.com/150'}
+                    alt={user.name}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                </a>
                 <div>
-                  <h3 className="text-xl font-semibold">{user.name}</h3>
+                  <a href={`/profile/${user.id}`} target="_blank">
+                    <h3 className="text-xl font-semibold">{user.name}</h3>
+                  </a>
                   <p className="text-sm text-gray-500">{user.email}</p>
                   <p className="text-sm text-gray-500">{user.phone ? user.phone : 'Chưa cập nhật'}</p>
                 </div>
