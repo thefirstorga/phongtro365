@@ -12,14 +12,7 @@ router.use(cookieParser())
 const bcryptSalt = bcrypt.genSaltSync(10)
 const jwtSecret = 'fhdjskahdfjkdsafhjdshakjhf'
 
-router.get('/check-admin', async (req, res) => {
-    const admin = await prisma.admin.findFirst();
-
-    if (admin) {
-        return res.json({ hasAdmin: true });
-    } else {
-        return res.json({ hasAdmin: false });
-    }
+router.get('/', (req, res) => {
 
 })
 
@@ -40,15 +33,8 @@ router.post('/register', async (req, res) => {
             res.json(newAdmin)
         })
     } else {
-        await prisma.admin.create({
-            data: {
-                email,
-                password: bcrypt.hashSync(password, bcryptSalt)
-            }
-        })
+        res.json('not')
     }
-    
-    res.json('not')
     
 })
 
@@ -76,49 +62,20 @@ router.post('/logout', (req, res) => {
     res.cookie('tokenAdmin', '').json(true)
 })
 
-router.get('/profile', async (req, res) => {
-    const { tokenAdmin } = req.cookies;
-    if (tokenAdmin) {
-        try {
-            jwt.verify(tokenAdmin, jwtSecret, {}, async (err, adminData) => {
-                if (err) {
-                    // Xử lý lỗi xác thực JWT
-                    console.error("JWT verification failed:", err);
-                    return res.status(401).json({ error: "Unauthorized" });
-                }
-                try {
-                    // Truy vấn cơ sở dữ liệu để lấy thông tin admin
-                    const user = await prisma.user.findUnique({
-                        where: { id: adminData.id }
-                    });
-
-                    // Kiểm tra nếu không tìm thấy admin trong cơ sở dữ liệu
-                    if (!user) {
-                        return res.status(404).json({ error: "Admin not found" });
-                    }
-
-                    // Destructure email và id từ user nếu có
-                    const { email, id } = user;
-
-                    // Trả dữ liệu admin về client
-                    res.json({ email, id });
-                } catch (dbErr) {
-                    // Xử lý lỗi trong quá trình truy vấn cơ sở dữ liệu
-                    console.error("Database query failed:", dbErr);
-                    res.status(500).json({ error: "Internal server error" });
-                }
-            });
-        } catch (jwtErr) {
-            // Xử lý lỗi không mong muốn từ bên ngoài
-            console.error("Unexpected error:", jwtErr);
-            res.status(500).json({ error: "Internal server error" });
-        }
+router.get('/profile', (req,res) => {
+    const {tokenAdmin} = req.cookies
+    if(tokenAdmin) {
+        jwt.verify(tokenAdmin, jwtSecret, {} , async (err, adminData) => {
+            if(err) throw err
+            const {email, id} = await prisma.user.findUnique({
+                where: {id: adminData.id}
+            })
+            res.json({email, id})
+        })
     } else {
-        // Nếu không có tokenAdmin trong cookie
-        res.json(null);
+        res.json(null) 
     }
-});
-
+})
 
 router.get('/get-places', async (req, res) => {
     try {

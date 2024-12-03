@@ -4,12 +4,10 @@ import axios from "axios";
 import { AdminContext } from "../components/AdminContext";
 
 export default function LoginPage() {
-  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [redirect, setRedirect] = useState(false);
-  const {admin, setAdmin} = useContext(AdminContext);
-
+  const {setAdmin} = useContext(AdminContext);
   async function handleLoginSubmit(ev) {
     ev.preventDefault();
     try {
@@ -26,17 +24,13 @@ export default function LoginPage() {
   }
 
   if (redirect) {
-    return <Navigate to={'/admin/reports'} />
-  }
-
-  if(admin) {
-    return <Navigate to={'/admin/reports'} />
+    return <Navigate to={'/admin'} />
   }
 
   return (
     <div className="mt-4 grow flex items-center justify-around">
       <div className="mb-64">
-        <h1 className="text-4xl text-center mb-4">Login admin</h1>
+        <h1 className="text-4xl text-center mb-4">Login</h1>
         <form className="max-w-md mx-auto" onSubmit={handleLoginSubmit}>
           <input type="email"
                  placeholder="your@email.com"
