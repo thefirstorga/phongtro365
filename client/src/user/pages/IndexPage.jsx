@@ -51,118 +51,6 @@ function IndexPage() {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   };
   
-  // const filterPlaces = (range, addressInput) => {
-  //   const [minPrice, maxPrice] = range;
-  //   const inputTokens = removeDiacritics(addressInput.toLowerCase())
-  //     .split(/\s+/)
-  //     .filter((token) => token !== ""); // Loại bỏ token rỗng
-  
-  //   return places.filter((place) => {
-  //     // Kiểm tra giá
-  //     const withinPriceRange = place.price >= minPrice && place.price <= maxPrice;
-  
-  //     // Kiểm tra địa chỉ và tiêu đề
-  //     if (inputTokens.length === 0) return withinPriceRange;
-  
-  //     const addressTokens = removeDiacritics(place.address.toLowerCase()).split(/\s+/);
-  //     const titleTokens = removeDiacritics(place.title.toLowerCase()).split(/\s+/);
-  
-  //     const matchedTokens = inputTokens.filter(
-  //       (token) =>
-  //         addressTokens.some((addressToken) => addressToken.startsWith(token)) ||
-  //         titleTokens.some((titleToken) => titleToken.startsWith(token))
-  //     );
-  
-  //     return withinPriceRange && matchedTokens.length > 0;
-  //   });
-  // };
-  
-  // Khi kéo thanh giá
-  
-  // const filterPlaces = (range, addressInput) => {
-  //   const [minPrice, maxPrice] = range;
-  
-  //   // Loại bỏ dấu và chuyển input thành chuỗi thường
-  //   const normalizedInput = removeDiacritics(addressInput.toLowerCase()).trim();
-  
-  //   return places.filter((place) => {
-  //     // Kiểm tra giá
-  //     const withinPriceRange = place.price >= minPrice && place.price <= maxPrice;
-  
-  //     // Nếu không có input, chỉ lọc theo giá
-  //     if (!normalizedInput) return withinPriceRange;
-  
-  //     // Loại bỏ dấu trong address và title
-  //     const normalizedAddress = removeDiacritics(place.address.toLowerCase());
-  //     const normalizedTitle = removeDiacritics(place.title.toLowerCase());
-  
-  //     // Kiểm tra cụm từ (includes thay vì startsWith)
-  //     const matchesAddress = normalizedAddress.includes(normalizedInput);
-  //     const matchesTitle = normalizedTitle.includes(normalizedInput);
-  
-  //     return withinPriceRange && (matchesAddress || matchesTitle);
-  //   });
-  // };
-
-  // const filterPlaces = (range, addressInput) => {
-  //   const [minPrice, maxPrice] = range;
-  
-  //   // Nếu input rỗng, hiển thị tất cả bài đăng trong khoảng giá
-  //   if (!addressInput.trim()) {
-  //     return places.filter((place) => place.price >= minPrice && place.price <= maxPrice);
-  //   }
-  
-  //   // Loại bỏ dấu và chuyển input thành mảng từ (tokens)
-  //   const inputTokens = removeDiacritics(addressInput.toLowerCase())
-  //     .split(/\s+/)
-  //     .filter((token) => token !== ""); // Loại bỏ token rỗng
-  
-  //   return places
-  //     .map((place) => {
-  //       // Loại bỏ dấu trong address và title
-  //       const normalizedAddress = removeDiacritics(place.address.toLowerCase());
-  //       const normalizedTitle = removeDiacritics(place.title.toLowerCase());
-  
-  //       // Tính điểm khớp cho từng trường
-  //       const addressScore = computeMatchScore(inputTokens, normalizedAddress);
-  //       const titleScore = computeMatchScore(inputTokens, normalizedTitle);
-  
-  //       // Tổng điểm: cộng dồn từ cả address và title
-  //       const totalScore = addressScore + titleScore;
-  
-  //       // Kiểm tra giá
-  //       const withinPriceRange = place.price >= minPrice && place.price <= maxPrice;
-  
-  //       return {
-  //         ...place,
-  //         score: withinPriceRange ? totalScore : 0, // Chỉ tính điểm nếu giá hợp lệ
-  //       };
-  //     })
-  //     .filter((place) => place.score > 0) // Loại bỏ bài đăng không khớp
-  //     .sort((a, b) => b.score - a.score); // Sắp xếp bài đăng theo điểm số
-  // };
-  
-  // const computeMatchScore = (inputTokens, text) => {
-  //   const textTokens = text.split(/\s+/);
-  
-  //   let matchScore = 0;
-  //   let consecutiveMatch = 0;
-  
-  //   inputTokens.forEach((token, index) => {
-  //     const matchIndex = textTokens.findIndex((t) => t.startsWith(token));
-  
-  //     if (matchIndex !== -1) {
-  //       matchScore++; // Tăng điểm cho mỗi từ khớp
-  //       if (index > 0 && textTokens[matchIndex - 1] === inputTokens[index - 1]) {
-  //         consecutiveMatch++; // Tăng điểm nếu từ khớp liên tiếp
-  //       }
-  //     }
-  //   });
-  
-  //   // Tổng điểm = số từ khớp + điểm khớp liên tiếp (ưu tiên)
-  //   return matchScore + consecutiveMatch * 0.5;
-  // };
-  
   const filterPlaces = (range, addressInput) => {
     const [minPrice, maxPrice] = range;
   
@@ -260,7 +148,9 @@ function IndexPage() {
             onChange={handleRangeChange}
           />
           ) : (
-            <p className="text-xl font-bold items-center justify-center">Các nhà này đang cùng 1 giá!</p>
+            <div className="flex items-center justify-center h-full border-2 border-gray-300 rounded-xl">
+              <p className="text-xl text-gray-500 font-bold">Các nhà này đang cùng 1 giá!</p>
+            </div>
           )}
           {/* Nút hiển thị/ẩn bản đồ */}
           <button

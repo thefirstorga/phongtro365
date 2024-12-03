@@ -9,6 +9,8 @@ import { differenceInCalendarMonths, differenceInDays, format } from 'date-fns';
 import InvoiceDetailRenter from '../components/InvoiceDetailRenter';
 import MapComponent from '../components/MapComponent';
 import { BASE_URL } from '../../config';
+import CommentsSection from '../components/CommentsSection';
+import UserRentHistory from '../components/UserRentHistory';
 
 function PlacePage() {
     const { id } = useParams();
@@ -76,6 +78,7 @@ function PlacePage() {
         </div>
     )
     let option = null
+    let bookingRented = []
     let reported = null
     let reportInfo = null
 
@@ -83,6 +86,7 @@ function PlacePage() {
         return <div>Loading place data...</div>
     } else {
         let bookingNow = place.bookings.find(booking => booking.status === "APPROVED") || place.bookings.find(booking => booking.status === "WAIT")// dòng này tìm xem có cái nào approved không
+        bookingRented = place.bookings.filter((booking) => booking.status === "RENTED" && booking.renterId === user.id)
         reported = place?.reports.find(report => report.reporterId === user.id)
 
         if (place?.reports?.length > 0) {
@@ -117,7 +121,7 @@ function PlacePage() {
             else if (pendingReports.length > 0) {
                 reportInfo = (
                     <div>
-                        <h2 className="font-semibold text-2xl text-primary mb-6">Lưu ý</h2>
+                        <h2 className="font-semibold text-2xl text-primary mb-1">Lưu ý</h2>
                         <button
                             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                             onClick={() => setShowReportsPopup(true)} // Mở popup
@@ -491,27 +495,33 @@ function PlacePage() {
 
 
             {/* Place Description and Details */}
-            <div className='mt-8 mb-8 grid gap-8 grid-cols-1 md:grid-cols-[2fr_1fr] p-6 rounded-lg shadow-md bg-gray-100'>
+            <div className='mt-4 mb-8 grid gap-8 grid-cols-1 md:grid-cols-[2fr_1fr] p-6 rounded-lg shadow-md bg-gray-100'>
                 <div>
                     <div className='my-4'>
                         <h2 className='font-semibold text-2xl'>Description</h2>
                         {place.description}
                     </div>
-                    Area: {place.area}<br />
-                    Duration: {place.duration}<br />
-                    Price: {place.price}
+                    <p className='font-bold inline'>Giá:</p> {place.price} <br />
+                    <p className='font-bold inline'>Diện tích:</p> {place.area}<br />
+                    <p className='font-bold inline'>Thời hạn hợp đồng:</p> {place.duration}<br />
+                    <div className='border-b-4 my-2'></div>
+                    <p className='font-bold inline'>Ngày đăng:</p> {new Date(place.createAt).toLocaleDateString()} <br />
+                    <p className='font-bold inline'>Ngày chỉnh sửa gần nhất:</p> {new Date(place.updateAt).toLocaleDateString()} 
                 </div>
                 {bookingWidget}
             </div>
 
             {/* Extra Info Section */}
-            <div className="bg-gray-100 px-8 py-8 border-t mt-6 rounded-lg shadow-md">
+            <div className="bg-gray-100 px-8 py-8 border-t mt-4 rounded-lg shadow-md">
                 <h2 className="font-semibold text-2xl text-gray-800">Thông tin thêm</h2>
                 <p className="text-gray-600 mt-4 leading-6">{place.extraInfo}</p>
             </div>
 
+            {/* Comment section */}
+            <CommentsSection placeId={place.id} userId={user?.id} />
+
             {/* History section */}
-            {/* {historyRent} */}
+            <UserRentHistory rentHistory={bookingRented}/>
         </div>
     );
 }

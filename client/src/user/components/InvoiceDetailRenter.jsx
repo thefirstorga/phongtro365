@@ -3,23 +3,12 @@ import axios from 'axios';
 import { BASE_URL } from '../../config';
 
 function InvoiceDetailRenter({ bookingId }) {
-    const [showForm, setShowForm] = useState(false);
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [addedPhotos, setAddedPhotos] = useState([]);
     const [invoices, setInvoices] = useState([]);
     const [showInvoice, setShowInvoice] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);  // To store the selected invoice
     const [showImageModal, setShowImageModal] = useState(false);  // To show image modal
     const [selectedImage, setSelectedImage] = useState(null);  // To store the selected image for modal
 
-    // Thêm hóa đơn
-    // async function saveForm(ev) {
-    //     ev.preventDefault();
-    //     const data = { bookingId, title, description, addedPhotos };
-    //     await axios.post('/booking/invoice', data);
-    //     window.location.reload();
-    // }
 
     // Hiển thị chi tiết hóa đơn
     const viewInvoiceDetail = (invoice) => {

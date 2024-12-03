@@ -33,6 +33,7 @@ model User {
   reports        Report[]   @relation("UserReports") // Các báo cáo do người dùng gửi
   status         UserStatus @default(ACTIVE) // Trạng thái người dùng
   violationCount Int        @default(0) // Số lần vi phạm
+  comments       Comment[]
 }
 
 enum UserStatus {
@@ -76,6 +77,8 @@ model Place {
   status      PlaceStatus  @default(SEE)
   bookings    Booking[]    @relation("PlaceBookings") // Khi xóa Place, xóa Booking liên quan
   reports     Report[]     @relation("PlaceReports")
+  createAt    DateTime     @default(now())
+  updateAt    DateTime     @updatedAt
 }
 
 enum PlaceStatus {
@@ -108,6 +111,7 @@ model Booking {
   status     BookingStatus @default(PENDING)
   isContinue Boolean       @default(false)
   invoices   Invoice[]     @relation("BookingInvoices") // Khi xóa Booking, xóa Invoice liên quan
+  comments   Comment[]
   createAt   DateTime      @default(now())
   updateAt   DateTime      @updatedAt
 }
@@ -136,4 +140,15 @@ model InvoicePhoto {
   url       String
   invoice   Invoice @relation("InvoicePhotos", fields: [invoiceId], references: [id], onDelete: Cascade) // Khi xóa Invoice, xóa Photo liên quan
   invoiceId Int
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int
+  bookingId Int      @unique // Ràng buộc chỉ cho phép 1 bình luận cho mỗi booking
+  user      User     @relation(fields: [userId], references: [id])
+  booking   Booking  @relation(fields: [bookingId], references: [id])
 }

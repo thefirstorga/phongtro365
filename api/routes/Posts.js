@@ -230,6 +230,7 @@ router.get('/place/:id', async (req, res) => {
                                 photos: true, // Lấy ảnh của Invoice
                             },
                         },
+                        comments: true
                     },
                 },
                 reports: { // Bao gồm thông tin đầy đủ của người báo cáo
@@ -268,8 +269,22 @@ router.get('/placedetail/:id', async (req, res) => {
       where: { id: parseInt(id, 10) },
       include: { 
         photos: true, 
-        perks: true,
-        bookings: true,
+        perks: true, 
+        bookings: {
+            include: {
+                comments: true,
+                invoices: true,
+                renter: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatar: true,
+                            phone: true,
+                            zalo: true,
+                        },
+                }
+            }
+        },
         reports: { // Bao gồm thông tin đầy đủ của người báo cáo
             include: {
                 reporter: { // Lấy thông tin người báo cáo
@@ -333,7 +348,6 @@ router.put('/places/:id', async (req, res) => {
         res.status(500).json({ error: "Something went wrong while updating the place." });
     }
 });
- 
 
 router.get('/places', async (req, res) => {
     try {
@@ -483,6 +497,116 @@ router.post('/add-report', async (req, res) => {
         }
     });
 })
-  
+
+router.get('/comments/:placeId', async (req, res) => {
+    const { placeId } = req.params;
+    try {
+        const comments = await prisma.comment.findMany({
+            where: { booking: { placeId: parseInt(placeId, 10) } },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatar: true,
+                    },
+                },
+            },
+        });
+        res.json(comments);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({ message: 'Lỗi khi lấy bình luận.' });
+    }
+});
+
+router.get('/comments/eligibility/:placeId/:userId', async (req, res) => {
+    const { placeId, userId } = req.params;
+    try {
+        // Lấy tất cả các booking với trạng thái 'RENTED' của người dùng
+        const bookings = await prisma.booking.findMany({
+            where: {
+                placeId: parseInt(placeId, 10),
+                renterId: parseInt(userId, 10),
+                status: 'RENTED',
+            },
+        });
+
+        if (!bookings.length) {
+            return res.json({ canComment: false }); // Không có booking nào hợp lệ
+        }
+
+        // Kiểm tra nếu mỗi booking đã có comment
+        const bookingIds = bookings.map(booking => booking.id);
+        const comments = await prisma.comment.findMany({
+            where: {
+                bookingId: { in: bookingIds }, // Tìm comment của các booking này
+            },
+        });
+
+        // Lấy danh sách các booking đã được comment
+        const commentedBookingIds = comments.map(comment => comment.bookingId);
+
+        // Tìm booking chưa được comment
+        const hasEligibleBooking = bookingIds.some(id => !commentedBookingIds.includes(id));
+
+        return res.json({ canComment: hasEligibleBooking });
+    } catch (error) {
+        console.error('Error checking comment eligibility:', error);
+        res.status(500).json({ message: 'Lỗi kiểm tra quyền bình luận.' });
+    }
+});
+
+router.post('/comments', async (req, res) => {
+    const { userId, placeId, content } = req.body;
+
+    try {
+        // Lấy danh sách các booking hợp lệ
+        const bookings = await prisma.booking.findMany({
+            where: {
+                placeId: parseInt(placeId, 10),
+                renterId: parseInt(userId, 10),
+                status: 'RENTED',
+            },
+        });
+
+        if (!bookings.length) {
+            return res.status(400).json({ message: 'Bạn không đủ điều kiện để bình luận.' });
+        }
+
+        // Lấy danh sách các comment đã có
+        const bookingIds = bookings.map(booking => booking.id);
+        const existingComments = await prisma.comment.findMany({
+            where: {
+                bookingId: { in: bookingIds },
+            },
+        });
+
+        // Xác định booking chưa được comment
+        const commentedBookingIds = existingComments.map(comment => comment.bookingId);
+        const eligibleBooking = bookings.find(booking => !commentedBookingIds.includes(booking.id));
+
+        if (!eligibleBooking) {
+            return res.status(400).json({ message: 'Bạn đã bình luận cho tất cả các lượt thuê.' });
+        }
+
+        // Tạo bình luận mới cho booking đủ điều kiện
+        const newComment = await prisma.comment.create({
+            data: {
+                content,
+                userId: parseInt(userId, 10),
+                bookingId: eligibleBooking.id,
+            },
+            include: { user: { select: { id: true, name: true } } },
+        });
+
+        res.status(201).json(newComment);
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ message: 'Lỗi khi thêm bình luận.' });
+    }
+});
+
+
 
 module.exports = router;
