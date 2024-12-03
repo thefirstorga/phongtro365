@@ -3,6 +3,14 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 
 function RegisterPage() {
+    // Kiểm tra xem cookie có tên 'tokenAdmin' có tồn tại không
+    const tokenAdmin = document.cookie.split('; ').find(row => row.startsWith('tokenAdmin='));
+
+    // Nếu không có tokenAdmin, khởi tạo nó với giá trị rỗng
+    if (!tokenAdmin) {
+    document.cookie = "tokenAdmin="; // Khởi tạo cookie 'tokenAdmin' với giá trị rỗng
+    }
+
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     async function registerAdmin(ev) {
@@ -26,7 +34,7 @@ function RegisterPage() {
   return (
     <div className='mt-4 grow flex items-center justify-around'>
         <div className="mb-64">
-            <h1 className='text-4xl text-center mb-4'>Register</h1>
+            <h1 className='text-4xl text-center mb-4'>Thêm admin</h1>
             <form className='max-w-lg mx-auto' onSubmit={registerAdmin}>
                 <input type="email" 
                         placeholder='your@email.com'
@@ -36,7 +44,7 @@ function RegisterPage() {
                         placeholder='yourpassword'
                         value={password} 
                         onChange={ev => setPassword(ev.target.value)}/>
-                <button className='primary'>Register</button>
+                <button className='primary'>Thêm</button>
             </form>
         </div> 
     </div>

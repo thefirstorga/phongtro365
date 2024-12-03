@@ -45,7 +45,6 @@ function Header() {
           {/* Nếu chưa đăng nhập */}
           {!admin && (
             <Link
-              to="/admin/login"
               className="flex items-center gap-2 border border-gray-300 rounded-full py-1 px-1 cursor-pointer"
             >
               <div className="bg-gray-500 text-white rounded-full border border-gray-500">
@@ -103,7 +102,7 @@ function Header() {
                     {admin.email}
                   </div>
                   <Link
-                    to="/admin/register"
+                    to="/admin"
                     className="block px-4 py-2 hover:bg-gray-100"
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >
@@ -127,7 +126,7 @@ function Header() {
                     onClick={logout}
                     className="w-full text-left block px-4 py-2 text-red-500 hover:bg-gray-100"
                   >
-                    Logout
+                    Đăng xuất
                   </button>
                 </div>
               )}
