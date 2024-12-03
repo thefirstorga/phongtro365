@@ -124,10 +124,13 @@ router.post('/accept', async (req, res) => {
             })
 
             // Bước 3: Xóa các booking có `status` là `PENDING` cùng `placeId`
-            await prisma.booking.deleteMany({
+            await prisma.booking.updateMany({
                 where: {
                     placeId: parseInt(placeId,10),
                     status: 'PENDING'
+                },
+                data: {
+                    status: 'REJECTED'
                 }
             })
 
@@ -139,6 +142,23 @@ router.post('/accept', async (req, res) => {
 
     });
 });
+
+router.post('/delete-all-booking', async (req, res) => {
+    const { token } = req.cookies;
+    const { id } = req.body;
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+        if (err) return res.status(403).json({ error: 'Invalid token' });
+        await prisma.booking.updateMany({
+            where: {
+                placeId: id,
+                status: 'PENDING'
+            },
+            data: {
+                status: 'REJECTED'
+            }
+        })
+    })
+})
 
 router.post('/invoice', async (req, res) => {
     const {
@@ -263,8 +283,4 @@ router.put('/not-rent-response', async (req, res) => {
 })
 
 
-  
-
-// hahaha, check xem được chưa nha
-// được không ta?
 module.exports = router;
