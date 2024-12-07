@@ -436,29 +436,29 @@ function PlacePage() {
                     <h2 className="font-semibold text-2xl text-gray-800 mb-6">Thông tin chủ nhà</h2>
 
                     {/* Hàng 1: Ảnh và tên */}
-                    <div className="flex items-center mb-6 ml-4">
-                    <a
-                        href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
-                        className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300 shadow-lg flex-shrink-0"
-                    >
-                        <img
-                            src={
-                                place.owner.avatar
-                                ? BASE_URL+place.owner.avatar
-                                : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
-                            }
-                            alt="Avatar"
-                            className="w-full h-full object-cover"
-                        />
-                    </a>
-                    <div className="ml-4">
+                    <div className="flex items-center ml-4 mb-6">
                         <a
                             href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
-                            className="text-lg font-semibold text-gray-800 hover:underline"
+                            className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300 shadow-lg flex-shrink-0"
                         >
-                        {place.owner.name}
+                            <img
+                                src={
+                                    place.owner.avatar
+                                    ? BASE_URL+place.owner.avatar
+                                    : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
+                                }
+                                alt="Avatar"
+                                className="w-full h-full object-cover"
+                            />
                         </a>
-                    </div>
+                        <div className="ml-4">
+                            <a
+                                href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
+                                className="text-lg font-semibold text-gray-800 hover:underline"
+                            >
+                            {place.owner.name}
+                            </a>
+                        </div>
                     </div>
 
                     {/* Hàng 2: Số điện thoại và Zalo */}
