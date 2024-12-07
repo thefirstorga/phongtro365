@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import PriceRangeSelector from "../components/PriceRangeSelector";
 import MapIndexPage from "../components/MapIndexPage";
 import { BASE_URL } from "../../config";
+import PlaceImg from "../components/PlaceImg";
 
 function IndexPage() {
   const [places, setPlaces] = useState([]); // Tất cả places từ API
@@ -129,7 +130,7 @@ function IndexPage() {
   return (
     <div className="flex flex-col relative">
       {/* Phần tìm kiếm */}
-      <div className="sticky p-4 bg-gray-100 w-full rounded-2xl shadow-md" style={{top: '80px'}}>
+      <div className="sticky p-4 bg-gray-100 w-full rounded-2xl shadow-md z-10" style={{top: '80px'}}>
         <p className="text-2xl font-bold mb-1">Tìm kiếm nhà</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4">
           {/* Dropdown chọn địa chỉ */}
@@ -174,24 +175,26 @@ function IndexPage() {
         >
           {filteredPlaces.length > 0 &&
             filteredPlaces.map((place) => (
-              <Link to={"/place/" + place.id} key={place.id}>
-                <div className="bg-gray-500 mb-2 rounded-2xl flex">
-                  {place.photos[0]?.url && (
-                    <img
-                      className="rounded-2xl object-cover aspect-square"
-                      src={
-                        BASE_URL + place.photos[0]?.url
-                      }
-                      alt=""
-                    />
-                  )}
+              <Link to={`/place/${place.id}`} key={place.id} className="bg-white shadow-lg rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-101 w-full h-full">
+                <div className="relative object-cover">
+                  <PlaceImg place={place} className="" />
                 </div>
-                <h2 className="font-bold">{place.address}</h2>
-                <h3 className="text-sm leading-4">{place.title}</h3>
-                <div className="mt-1">
-                  <span className="font-bold">${place.price}</span> per night
+
+                <div className="p-4 overflow-hidden">
+                  <h2 className="font-semibold text-xl text-gray-800 mt-1 truncate hover:truncate-none transition-all duration-300">{place.title}</h2>
+                  
+                  <h3 className="text-sm text-gray-500 mt-1 truncate hover:truncate-none transition-all duration-300">
+                    {place.address}
+                  </h3>
+
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="font-bold text-lg text-blue-600">{place.price}</span>
+                    <span className="text-sm text-gray-600">VNĐ/tháng</span>
+                  </div>
                 </div>
               </Link>
+
+
             ))}
         </div>
 

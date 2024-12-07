@@ -609,6 +609,106 @@ router.post('/comments', async (req, res) => {
     }
 });
 
+// Check if the user has already favourited the place
+router.get('/favourites/check', async (req, res) => {
+    const { token } = req.cookies;
+    if (token) {
+      jwt.verify(token, jwtSecret, async (err, userData) => {
+        if (err) throw err;
+  
+        // Kiểm tra nếu Place đã được yêu thích bởi người dùng
+        const favourite = await prisma.favourite.findUnique({
+          where: {
+            userId_placeId: {
+              userId: userData.id,
+              placeId: parseInt(req.query.placeId), // ID của Place được yêu cầu
+            },
+          },
+        });
+  
+        res.json({ isFavourite: favourite ? true : false });
+      });
+    } else {
+      res.json({ isFavourite: false });
+    }
+});
 
+// Add or remove favourite
+// API để thêm yêu thích (POST)
+router.post('/favourites', async (req, res) => {
+    const { token } = req.cookies;
+    if (token) {
+        jwt.verify(token, jwtSecret, async (err, userData) => {
+            if (err) throw err;
+    
+            const { placeId } = req.body;
+
+            // Nếu chưa yêu thích, thêm yêu thích
+            await prisma.favourite.create({
+            data: {
+                userId: userData.id,
+                placeId,
+                },
+            });
+            res.json({ isFavourite: true });
+        });
+    } else {
+      res.status(401).json({ message: 'Unauthorized' });
+    }
+});
+
+// API để bỏ yêu thích (DELETE)
+router.delete('/favourites', async (req, res) => {
+    const { token } = req.cookies;
+    if (token) {
+        jwt.verify(token, jwtSecret, async (err, userData) => {
+        if (err) throw err;
+
+        const { placeId } = req.body;
+
+        // Xóa yêu thích nếu đã có
+        await prisma.favourite.delete({
+            where: {
+                userId_placeId: {
+                userId: userData.id,
+                placeId,
+                },
+            },
+        });
+        res.json({ isFavourite: false });
+        
+        });
+    } else {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+});
+
+router.get('/favourites', async (req, res) => {
+    const { token } = req.cookies;
+    if (token) {
+      jwt.verify(token, jwtSecret, async (err, userData) => {
+        if (err) throw err;
+  
+        // Lấy danh sách các nhà yêu thích của người dùng
+        const favouritePlaces = await prisma.favourite.findMany({
+          where: { userId: userData.id },
+          include: {
+            place: {
+                include: {
+                    photos: true
+                }
+            }, // Lấy thông tin nhà (place) liên quan đến favourite
+          },
+        });
+  
+        // Trả về dữ liệu nhà yêu thích
+        const places = favouritePlaces.map(fav => fav.place);
+        res.json(places);
+      });
+    } else {
+      res.status(401).json({ message: 'Unauthorized' });
+    }
+  });
+  
 
 module.exports = router;

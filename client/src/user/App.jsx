@@ -14,6 +14,7 @@ import BookingPage from './pages/BookingPage';
 import ProfileVisitPage from './pages/ProfileVisitPage';
 import { RedirectIfAuthenticated } from './components/RedirectIfAuthenticated';
 import { RequireAuth } from './components/RequireAuth';
+import FavouritePage from './pages/FavouritePage';
 
 axios.defaults.baseURL = 'http://localhost:4000';
 axios.defaults.withCredentials = true;
@@ -22,8 +23,10 @@ function App() {
   return (
     <UserContextProvider>
       <Routes>
-        {/* Route công khai */}
-        <Route path='/' element={<Layout />}>
+        {/* Route công khai không yêu cầu đăng nhập */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<IndexPage />} />
+          
           <Route
             path="/login"
             element={
@@ -51,14 +54,14 @@ function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<IndexPage />} />
           <Route path="/account" element={<ProfilePage />} />
           <Route path="/account/places" element={<PlacesPage />} />
           <Route path="/account/places/new" element={<PlacesFormPage />} />
           <Route path="/account/places/:id" element={<PlacesFormPage />} />
           <Route path="/place/:id" element={<PlacePage />} />
           <Route path="/account/bookings" element={<BookingsPage />} />
-          <Route path="/account/bookings/:id" element={<BookingPage />} />
+          <Route path="/account/favourites" element={<FavouritePage />} />
+          {/* <Route path="/account/bookings/:id" element={<BookingPage />} /> */}
           <Route path="/profile/:id" element={<ProfileVisitPage />} />
         </Route>
       </Routes>

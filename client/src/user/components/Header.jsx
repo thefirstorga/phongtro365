@@ -128,6 +128,13 @@ function Header() {
                   >
                     Nhà của bạn
                   </Link>
+                  <Link
+                    to="/account/favourites"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                    onClick={() => setMenuOpen(false)} // Đóng menu
+                  >
+                    Nhà yêu thích
+                  </Link>
                   <button
                     onClick={logout}
                     className="w-full text-left block px-4 py-2 text-red-500 hover:bg-gray-100"
