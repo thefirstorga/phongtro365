@@ -11,6 +11,7 @@ import MapComponent from '../components/MapComponent';
 import { BASE_URL } from '../../config';
 import CommentsSection from '../components/CommentsSection';
 import UserRentHistory from '../components/UserRentHistory';
+import PlaceFav from '../components/PlaceFav';
 
 function PlacePage() {
     const { id } = useParams();
@@ -340,12 +341,15 @@ function PlacePage() {
             {/* Place Details Section */}
             <div className="mt-4 bg-gray-100 px-8 py-8 rounded-lg shadow-md">
                 <div className='flex gap-4 items-center justify-between'>
-                    <h1 className="text-3xl font-semibold text-gray-800">{place.title}</h1>
-                    <button className='flex gap-2 items-center' onClick={handleReportClick}>
+                    <div className='flex items-center gap-4'>
+                        <h1 className="text-3xl font-semibold text-gray-800">{place.title}</h1>
+                        <PlaceFav place={place}/>
+                    </div>
+                    <button className='flex gap-2 items-center bg-white' onClick={handleReportClick}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
                         </svg>
-                        <p className='font-semibold text-lg'>Report</p>
+                        <p className='font-semibold text-lg'>Báo cáo</p>
                     </button>
                 </div>
                 <div className='flex gap-6 my-2'>
@@ -380,10 +384,10 @@ function PlacePage() {
                     onClick={handleOutsideClick}
                 >
                     <div className="bg-white p-6 rounded shadow-md w-96">
-                        <h2 className="text-xl font-semibold mb-4">Report reason</h2>
+                        <h2 className="text-xl font-semibold mb-4">Lý do báo cáo</h2>
                         <textarea
                             className="w-full p-2 border rounded mb-4"
-                            placeholder="Enter your reason for reporting this house"
+                            placeholder="Vui lòng cho biết lý do bạn báo cáo nhà này"
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                         />
@@ -392,13 +396,13 @@ function PlacePage() {
                                 className="px-4 py-2 bg-gray-200 rounded"
                                 onClick={() => setIsPopupOpen(false)}
                             >
-                                Cancel
+                                Hủy
                             </button>
                             <button
                                 className="px-4 py-2 bg-blue-500 text-white rounded"
                                 onClick={handleSendReport}
                             >
-                                Send
+                                Gửi
                             </button>
                         </div>
                     </div>
@@ -412,8 +416,8 @@ function PlacePage() {
                     onClick={handleOutsideClick}
                 >
                     <div className="bg-white p-6 rounded shadow-md w-96">
-                        <h2 className="text-xl font-semibold mb-4">Report reason</h2>
-                        <h2 className="text-md">Bạn đã report nhà này</h2>
+                        <h2 className="text-xl font-semibold mb-4">Lý do báo cáo</h2>
+                        <h2 className="text-md">Bạn đã báo cáo nhà này</h2>
                         <h2 className="text-md font-bold">Trạng thái:</h2>
                         {reported.status === 'PENDING' ? (
                             <p>Yêu cầu của bạn đang chờ.</p>
@@ -432,29 +436,29 @@ function PlacePage() {
                     <h2 className="font-semibold text-2xl text-gray-800 mb-6">Thông tin chủ nhà</h2>
 
                     {/* Hàng 1: Ảnh và tên */}
-                    <div className="flex items-center mb-6 ml-4">
-                    <a
-                        href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
-                        className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300 shadow-lg flex-shrink-0"
-                    >
-                        <img
-                            src={
-                                place.owner.avatar
-                                ? BASE_URL+place.owner.avatar
-                                : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
-                            }
-                            alt="Avatar"
-                            className="w-full h-full object-cover"
-                        />
-                    </a>
-                    <div className="ml-4">
+                    <div className="flex items-center ml-4 mb-6">
                         <a
                             href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
-                            className="text-lg font-semibold text-gray-800 hover:underline"
+                            className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300 shadow-lg flex-shrink-0"
                         >
-                        {place.owner.name}
+                            <img
+                                src={
+                                    place.owner.avatar
+                                    ? BASE_URL+place.owner.avatar
+                                    : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
+                                }
+                                alt="Avatar"
+                                className="w-full h-full object-cover"
+                            />
                         </a>
-                    </div>
+                        <div className="ml-4">
+                            <a
+                                href={`/profile/${place.owner.id}`} // Đường dẫn đến trang cá nhân
+                                className="text-lg font-semibold text-gray-800 hover:underline"
+                            >
+                            {place.owner.name}
+                            </a>
+                        </div>
                     </div>
 
                     {/* Hàng 2: Số điện thoại và Zalo */}
@@ -502,7 +506,7 @@ function PlacePage() {
             <div className='mt-4 mb-8 grid gap-8 grid-cols-1 md:grid-cols-[2fr_1fr] p-6 rounded-lg shadow-md bg-gray-100'>
                 <div>
                     <div className='my-4'>
-                        <h2 className='font-semibold text-2xl'>Description</h2>
+                        <h2 className='font-semibold text-2xl'>Mô tả</h2>
                         {place.description}
                     </div>
                     <p className='font-bold inline'>Giá:</p> {place.price} <br />

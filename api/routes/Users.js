@@ -114,7 +114,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-
 router.get('/profile', (req,res) => {
     const {token} = req.cookies
     if(token) {

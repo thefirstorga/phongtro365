@@ -79,6 +79,7 @@
 // ở đây fix được rồi nha:))). Hơi ảo
 import React, { useState } from 'react';
 import { BASE_URL } from '../../config';
+import PlaceFav from './PlaceFav'
 
 function PlaceImg({ place, className = null }) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -120,6 +121,10 @@ function PlaceImg({ place, className = null }) {
                 src={BASE_URL + place.photos[currentIndex].url}
                 alt="Place"
             />
+
+            <div className="absolute top-0 right-1">
+                <PlaceFav place={place}/>
+            </div>
 
             {/* Nút xem ảnh trước */}
             {isHovered && (

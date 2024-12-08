@@ -42,13 +42,22 @@ function PlacesPage() {
               className='flex gap-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500'
               key={place.id}
             >
-              <div className='w-48 h-48'>
+              <div className='w-56'>
                 <PlaceImg place={place} />
               </div>
-              <div className='py-3 pr-3 grow'>
-                <h2 className='text-xl'>{place.title}</h2>
-                <p className='border border-t-2 text-sm mt-2'>{place.description}</p>
-                <p className='text-sm mt-4'>{place.bookings.filter((booking) => booking.status === 'PENDING').length} người đang chờ duyệt</p>
+              <div className='py-3 pr-3 grow overflow-hidden w-80'>
+                <h2 className='font-bold text-2xl text-gray-800 mt-1 truncate hover:truncate-none transition-all duration-300 mb-4'>{place.title}</h2>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{place.description}</p>
+                {place.bookings.filter((booking) => booking.status === 'PENDING').length > 0 && (
+                  <p className='text-md mt-4 truncate hover:truncate-none transition-all duration-300'>
+                    Có <b>{place.bookings.filter((booking) => booking.status === 'PENDING').length}</b> người đang chờ duyệt
+                  </p>
+                )}
+                {place.bookings.filter((booking) => booking.status === 'APPROVED').length > 0 && (
+                  <p className='text-md mt-4 truncate hover:truncate-none transition-all duration-300'>
+                    Đang có người thuê
+                  </p>
+                )}
               </div>
             </Link>
           ))}

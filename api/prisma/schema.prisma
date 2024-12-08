@@ -19,21 +19,22 @@ model Admin {
 }
 
 model User {
-  id             Int        @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   name           String
-  email          String     @unique
+  email          String      @unique
   password       String
   avatar         String?
   phone          String?
   zalo           String?
-  createAt       DateTime   @default(now())
-  updateAt       DateTime   @updatedAt
-  places         Place[]    @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
-  bookings       Booking[]  @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
-  reports        Report[]   @relation("UserReports") // Các báo cáo do người dùng gửi
-  status         UserStatus @default(ACTIVE) // Trạng thái người dùng
-  violationCount Int        @default(0) // Số lần vi phạm
+  createAt       DateTime    @default(now())
+  updateAt       DateTime    @updatedAt
+  places         Place[]     @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
+  bookings       Booking[]   @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
+  reports        Report[]    @relation("UserReports") // Các báo cáo do người dùng gửi
+  status         UserStatus  @default(ACTIVE) // Trạng thái người dùng
+  violationCount Int         @default(0) // Số lần vi phạm
   comments       Comment[]
+  favourites     Favourite[]
 }
 
 enum UserStatus {
@@ -77,6 +78,7 @@ model Place {
   status      PlaceStatus  @default(SEE)
   bookings    Booking[]    @relation("PlaceBookings") // Khi xóa Place, xóa Booking liên quan
   reports     Report[]     @relation("PlaceReports")
+  favourites  Favourite[]
   createAt    DateTime     @default(now())
   updateAt    DateTime     @updatedAt
 }
@@ -151,4 +153,16 @@ model Comment {
   bookingId Int      @unique // Ràng buộc chỉ cho phép 1 bình luận cho mỗi booking
   user      User     @relation(fields: [userId], references: [id])
   booking   Booking  @relation(fields: [bookingId], references: [id])
+}
+
+model Favourite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  placeId   Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, placeId]) // Đảm bảo mỗi user chỉ được yêu thích mỗi Place một lần
 }

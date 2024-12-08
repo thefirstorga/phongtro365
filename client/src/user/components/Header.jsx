@@ -98,9 +98,8 @@ function Header() {
                   </svg>
                 </div>
               </div>
-
               {menuOpen && (
-                <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                <div className="absolute lg:left-0 right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                   <div
                     className="block px-4 py-2 hover:bg-gray-100 border-b-2"
                     onClick={() => setMenuOpen(false)} // Đóng menu
@@ -127,6 +126,13 @@ function Header() {
                     onClick={() => setMenuOpen(false)} // Đóng menu
                   >
                     Nhà của bạn
+                  </Link>
+                  <Link
+                    to="/account/favourites"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                    onClick={() => setMenuOpen(false)} // Đóng menu
+                  >
+                    Nhà yêu thích
                   </Link>
                   <button
                     onClick={logout}
