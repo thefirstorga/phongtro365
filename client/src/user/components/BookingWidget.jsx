@@ -53,16 +53,16 @@ function BookingWidget({place}) {
 
   return (
     <div className='bg-white shadow-sm p-4 rounded-2xl'>
-        <div className='text-2xl text-center'>
-            Price: ${place.price} / per month
+        <div className='text-xl text-center'>
+            Giá: {place.price} VNĐ/tháng
         </div>
         {!isBooked ? (
                 <button onClick={bookThisPlace} className='primary mt-4'>
-                    Book this place
+                    Book nhà này
                 </button>
             ) : (
                 <button onClick={cancelBooking} className='primary mt-4'>
-                    Cancel booking
+                    Hủy đặt
                 </button>
             )}
     </div>

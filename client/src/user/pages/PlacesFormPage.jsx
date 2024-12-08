@@ -1,152 +1,260 @@
-import React, { useEffect, useState } from 'react'
-import PhotoUploader from '../components/PhotoUploader'
-import Perks from '../components/Perks'
-import axios from 'axios'
-import LocationPicker from '../components/LocationPicker'
-import { Navigate, useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import PhotoUploader from '../components/PhotoUploader';
+import Perks from '../components/Perks';
+import axios from 'axios';
+import LocationPicker from '../components/LocationPicker';
+import { Navigate, useParams } from 'react-router-dom';
 
 function PlacesFormPage() {
-    const {id} = useParams()
-    const [title, setTitle] = useState('')
-    const [address, setAddress] = useState('')
-    const [latitude, setLatitude] = useState(null)
-    const [longitude, setLongitude] = useState(null)
-    const [description, setDescription] = useState('')
-    const [addedPhotos, setAddedPhotos] = useState([])
-    const [perks, setPerks] = useState([])
-    const [extraInfo, setExtraInfo] = useState('')
-    const [area, setArea] = useState(30)
-    const [duration, setDuration] = useState(6)
-    const [price, setPrice] = useState(100)
-    const [redirect, setRedirect] = useState(false)
+    const {id} = useParams();
+    const [title, setTitle] = useState('');
+    const [address, setAddress] = useState('');
+    const [latitude, setLatitude] = useState(null);
+    const [longitude, setLongitude] = useState(null);
+    const [description, setDescription] = useState('');
+    const [addedPhotos, setAddedPhotos] = useState([]);
+    const [perks, setPerks] = useState([]);
+    const [extraInfo, setExtraInfo] = useState('');
+    const [area, setArea] = useState(30);
+    const [duration, setDuration] = useState(6);
+    const [price, setPrice] = useState(100);
+    const [redirect, setRedirect] = useState(false);
+    
+    // Error states for each field
+    const [titleError, setTitleError] = useState('');
+    const [addressError, setAddressError] = useState('');
+    const [photosError, setPhotosError] = useState('');
+    const [descriptionError, setDescriptionError] = useState('');
+    const [areaError, setAreaError] = useState('');
+    const [durationError, setDurationError] = useState('');
+    const [priceError, setPriceError] = useState('');
 
     useEffect(() => {
-        if(!id) return
+        if (!id) return;
         axios.get('/post/place/' + id).then(response => {
-            let {data} = response
-            data = data.place
-            setTitle(data.title)
-            setAddress(data.address)
+            let { data } = response;
+            data = data.place;
+            setTitle(data.title);
+            setAddress(data.address);
             setLatitude(data.latitude);
             setLongitude(data.longitude);
-            // console.log(data)
             const photos = data.photos.map(photoGet => photoGet.url);
             setAddedPhotos(photos);
-            setDescription(data.description)
-            const perks = data.perks.map(perkGet => perkGet.perk)
-            setPerks(perks)
-            setExtraInfo(data.extraInfo)
-            setArea(data.area)
-            setDuration(data.duration)
-            setPrice(data.price)
-         })
-    }, [id])
-
+            setDescription(data.description);
+            const perks = data.perks.map(perkGet => perkGet.perk);
+            setPerks(perks);
+            setExtraInfo(data.extraInfo);
+            setArea(data.area);
+            setDuration(data.duration);
+            setPrice(data.price);
+        });
+    }, [id]);
 
     function inputHeader(text) {
-        return(
+        return (
             <h2 className='text-2xl mt-4'>{text}</h2>
-        )
+        );
     }
+
     function inputDescription(text) {
-        return(
+        return (
             <p className='text-gray-500 text-sm'>{text}</p>
-        )
+        );
     }
+
     function preInput(header, description) {
         return (
             <>
                 {inputHeader(header)}
                 {inputDescription(description)}
             </>
-        )
+        );
+    }
+
+    // Hàm kiểm tra tính hợp lệ
+    function validateForm() {
+        let isValid = true;
+
+        // Kiểm tra các trường bắt buộc
+        if (!title) {
+            setTitleError('Vui lòng nhập tiêu đề');
+            isValid = false;
+        } else {
+            setTitleError('');
+        }
+
+        if (!address) {
+            setAddressError('Vui lòng nhập địa chỉ');
+            isValid = false;
+        } else {
+            setAddressError('');
+        }
+
+        if (addedPhotos.length < 3) {
+            setPhotosError('Vui lòng chọn ít nhất 3 hình ảnh');
+            isValid = false;
+        } else {
+            setPhotosError('');
+        }
+
+        if (!description) {
+            setDescriptionError('Vui lòng nhập mô tả');
+            isValid = false;
+        } else {
+            setDescriptionError('');
+        }
+
+        if (!area) {
+            setAreaError('Vui lòng nhập diện tích');
+            isValid = false;
+        } else {
+            setAreaError('');
+        }
+
+        if (!duration) {
+            setDurationError('Vui lòng nhập thời hạn hợp đồng');
+            isValid = false;
+        } else {
+            setDurationError('');
+        }
+
+        if (!price) {
+            setPriceError('Vui lòng nhập giá');
+            isValid = false;
+        } else {
+            setPriceError('');
+        }
+
+        return isValid;
     }
 
     async function savePlace(ev) {
-        ev.preventDefault()
+        ev.preventDefault();
+        // Kiểm tra form trước khi lưu
+        if (!validateForm()) return;
+
         const placeData = {
             title, address, latitude, longitude, 
             addedPhotos, 
             description, perks, extraInfo, 
             area, duration, price
-        }
-        if(id) {
-            await axios.put('/post/places/' + id, {id, ...placeData})
+        };
+
+        if (id) {
+            await axios.put('/post/places/' + id, { id, ...placeData });
         } else {
-            await axios.post('/post/places', placeData)
+            await axios.post('/post/places', placeData);
         }
-        setRedirect(true)
+        setRedirect(true);
     }
 
-    if(redirect) return <Navigate to={'/account/places'}/>
+    // Hàm để xử lý thay đổi ở các trường nhập liệu
+    function handleInputChange(setState, fieldErrorSetter) {
+        return (ev) => {
+            const { value } = ev.target;
+            setState(value);
+            if (value) {
+                fieldErrorSetter('');  // Ẩn lỗi khi người dùng nhập
+            }
+        };
+    }
 
-  return (
-    <div>
-        <form onSubmit={savePlace}>
-            {preInput('Title', 'Fill your title')}
-            <input type='text' value={title}
-                onChange={ev => setTitle(ev.target.value)}
-                placeholder='Title'
-            />
-            
-            {preInput('Address', 'Fill your address')}
-            <input type='text' value={address}
-                onChange={ev => setAddress(ev.target.value)}
-                placeholder='Address'
-            />
-            <h2 className="text-2xl mt-4">Map location</h2>
-            {latitude && (
-                <p>(Bạn đã chọn địa chỉ, tuy nhiên vẫn có thể đổi)</p>
-            )}
-            <LocationPicker
-                latitude={latitude}
-                longitude={longitude}
-                onChange={({ latitude, longitude }) => {
-                    setLatitude(latitude);
-                    setLongitude(longitude);
-                }}
-            />
-            
-            {preInput('Photos', 'Fill your photos')}
-            <PhotoUploader addedPhotos={addedPhotos} setAddedPhotos={setAddedPhotos}/>
-            {/* {console.log(addedPhotos[0])} */}
-            {preInput('Description', 'Fill your description')}
-            <textarea value={description} onChange={ev => setDescription(ev.target.value)}/>
+    if (redirect) return <Navigate to={'/account/places'} />;
 
-            {preInput('Perks', 'Fill your perks')}
-            <div className='grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
-                <Perks selected={perks} onChange={setPerks}/>
-            </div>
+    return (
+        <div>
+            <form onSubmit={savePlace}>
+                {preInput('Tiêu đề', 'Nhập tiêu đề của bạn')}
+                <input 
+                    type='text' 
+                    value={title}
+                    onChange={handleInputChange(setTitle, setTitleError)}
+                    placeholder='Tiêu đề'
+                    className={titleError ? 'border-red-500' : ''}
+                />
+                {titleError && <p className="text-red-500 text-sm">{titleError}</p>}
+                
+                {preInput('Địa chỉ', 'Nhập địa chỉ nhà bạn')}
+                <input 
+                    type='text' 
+                    value={address}
+                    onChange={handleInputChange(setAddress, setAddressError)}
+                    placeholder='Địa chỉ'
+                    className={addressError ? 'border-red-500' : ''}
+                />
+                {addressError && <p className="text-red-500 text-sm">{addressError}</p>}
+                
+                <h2 className="text-2xl mt-4">Chọn trên bản đồ</h2>
+                {latitude && (
+                    <p>(Bạn đã chọn địa chỉ, tuy nhiên vẫn có thể đổi)</p>
+                )}
+                <LocationPicker
+                    latitude={latitude}
+                    longitude={longitude}
+                    onChange={({ latitude, longitude }) => {
+                        setLatitude(latitude);
+                        setLongitude(longitude);
+                    }}
+                />
+                
+                {preInput('Hình ảnh', 'Chọn hình ảnh')}
+                    <PhotoUploader addedPhotos={addedPhotos} setAddedPhotos={setAddedPhotos} />
+                {photosError && <p className="text-red-500 text-sm">{photosError}</p>}
 
-            {preInput('Extra info', 'Fill your extra info')}
-            <textarea value={extraInfo} onChange={ev => setExtraInfo(ev.target.value)} />
+                {preInput('Mô tả', 'Vui lòng mô tả chi tiết nhà bạn')}
+                <textarea 
+                    value={description} 
+                    onChange={handleInputChange(setDescription, setDescriptionError)} 
+                    className={descriptionError ? 'border-red-500' : ''}
+                />
+                {descriptionError && <p className="text-red-500 text-sm">{descriptionError}</p>}
 
-            {preInput('Area - Duration - Price', 'Fill the blank')}
-            <div className='grid gap-2 sm:grid-cols-3 lg:grid-cols-3'>
-                <div>
-                    <h3 className='mt-2 -mb-1'>Area - mét vuông</h3>
-                    <input type="number" value={area}
-                        onChange={ev => setArea(Number(ev.target.value))}
-                    />
+                {preInput('Dịch vụ', 'Chọn dịch vụ nhà bạn')}
+                <div className='grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
+                    <Perks selected={perks} onChange={setPerks} />
                 </div>
-                <div>
-                    <h3 className='mt-2 -mb-1'>Duration - tháng</h3>
-                    <input type="number" value={duration}
-                        onChange={ev => setDuration(Number(ev.target.value))}
-                    />
-                </div>
-                <div>
-                    <h3 className='mt-2 -mb-1'>Price per month</h3>
-                    <input type="number" value={price}
-                        onChange={ev => setPrice(Number(ev.target.value))}
-                    />
-                </div>
-            </div>
 
-            <button className='primary my-4'>Save</button>
-        </form>
-    </div>
-  )
+                {preInput('Thông tin thêm', 'Nhập thông tin thêm của nhà')}
+                <textarea value={extraInfo} onChange={ev => setExtraInfo(ev.target.value)} />
+
+                {preInput('Diện tích - Thời hạn hợp đồng - Giá', 'Nhập đầy đủ 3 trường sau')}
+                <div className='grid gap-2 sm:grid-cols-3 lg:grid-cols-3'>
+                    <div>
+                        <h3 className='mt-2 -mb-1'>Diện tích - mét vuông</h3>
+                        <input 
+                            type="number" 
+                            value={area}
+                            onChange={handleInputChange(setArea, setAreaError)}
+                            className={areaError ? 'border-red-500' : ''}
+                        />
+                        {areaError && <p className="text-red-500 text-sm">{areaError}</p>}
+                    </div>
+                    <div>
+                        <h3 className='mt-2 -mb-1'>Thời hạn - tháng</h3>
+                        <input 
+                            type="number" 
+                            value={duration}
+                            onChange={handleInputChange(setDuration, setDurationError)}
+                            className={durationError ? 'border-red-500' : ''}
+                        />
+                        {durationError && <p className="text-red-500 text-sm">{durationError}</p>}
+                    </div>
+                    <div>
+                        <h3 className='mt-2 -mb-1'>Giá - VNĐ/tháng</h3>
+                        <input 
+                            type="number" 
+                            value={price}
+                            onChange={handleInputChange(setPrice, setPriceError)}
+                            className={priceError ? 'border-red-500' : ''}
+                        />
+                        {priceError && <p className="text-red-500 text-sm">{priceError}</p>}
+                    </div>
+                </div>
+
+                <button className='primary my-4'>Lưu</button>
+            </form>
+        </div>
+    );
 }
 
-export default PlacesFormPage
+export default PlacesFormPage;
