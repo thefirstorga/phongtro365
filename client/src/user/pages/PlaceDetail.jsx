@@ -81,7 +81,22 @@ function PlaceDetail() {
                 <p className="text-lg text-gray-600">Có {bookingPending.length} người đang chờ duyệt</p>
                 {bookingPending.map(booking => (
                     <div className="flex items-center justify-between bg-gray-100 p-4 mt-4 rounded-lg shadow-md" key={booking.id}>
-                        <p className="text-gray-800">RenterId: {booking.renterId}</p>
+                        <Link to={`/profile/${booking.renter.id}`}>
+                            <img
+                                src={
+                                    booking.renter?.avatar
+                                        ? BASE_URL + booking.renter?.avatar
+                                        : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
+                                    }
+                                alt={booking.renter.avatar}
+                                className="w-12 h-12 rounded-full mr-3"
+                            />
+                        </Link>
+                        <div className="flex-grow">
+                            <a href={`/profile/${booking.renter.id}`} className="text-lg font-semibold text-gray-800 hover:underline">
+                                {booking.renter.name}
+                            </a>
+                        </div>
                         <button
                             className="bg-green-500 text-white py-2 px-6 rounded-md hover:bg-green-600 focus:outline-none"
                             onClick={() => acceptBooking(booking.id)}

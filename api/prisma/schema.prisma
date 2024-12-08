@@ -19,22 +19,23 @@ model Admin {
 }
 
 model User {
-  id             Int         @id @default(autoincrement())
+  id             Int            @id @default(autoincrement())
   name           String
-  email          String      @unique
+  email          String         @unique
   password       String
   avatar         String?
   phone          String?
   zalo           String?
-  createAt       DateTime    @default(now())
-  updateAt       DateTime    @updatedAt
-  places         Place[]     @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
-  bookings       Booking[]   @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
-  reports        Report[]    @relation("UserReports") // Các báo cáo do người dùng gửi
-  status         UserStatus  @default(ACTIVE) // Trạng thái người dùng
-  violationCount Int         @default(0) // Số lần vi phạm
+  createAt       DateTime       @default(now())
+  updateAt       DateTime       @updatedAt
+  places         Place[]        @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
+  bookings       Booking[]      @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
+  reports        Report[]       @relation("UserReports") // Các báo cáo do người dùng gửi
+  status         UserStatus     @default(ACTIVE) // Trạng thái người dùng
+  violationCount Int            @default(0) // Số lần vi phạm
   comments       Comment[]
   favourites     Favourite[]
+  notifications  Notification[]
 }
 
 enum UserStatus {
@@ -61,26 +62,27 @@ enum ReportStatus {
 }
 
 model Place {
-  id          Int          @id @default(autoincrement())
-  owner       User         @relation("UserPlaces", fields: [ownerId], references: [id], onDelete: Cascade) // Khi xóa User, xóa Place
-  ownerId     Int
-  title       String
-  address     String
-  latitude    Decimal?
-  longitude   Decimal?
-  area        Int // diện tích
-  photos      PlacePhoto[] @relation("PlacePhotos") // Khi xóa Place, xóa Photo liên quan
-  description String
-  perks       PlacePerk[]  @relation("PlacePerks") // Khi xóa Place, xóa Perk liên quan
-  extraInfo   String
-  duration    Int // thời hạn hợp đồng
-  price       Int
-  status      PlaceStatus  @default(SEE)
-  bookings    Booking[]    @relation("PlaceBookings") // Khi xóa Place, xóa Booking liên quan
-  reports     Report[]     @relation("PlaceReports")
-  favourites  Favourite[]
-  createAt    DateTime     @default(now())
-  updateAt    DateTime     @updatedAt
+  id           Int            @id @default(autoincrement())
+  owner        User           @relation("UserPlaces", fields: [ownerId], references: [id], onDelete: Cascade) // Khi xóa User, xóa Place
+  ownerId      Int
+  title        String
+  address      String
+  latitude     Decimal?
+  longitude    Decimal?
+  area         Int // diện tích
+  photos       PlacePhoto[]   @relation("PlacePhotos") // Khi xóa Place, xóa Photo liên quan
+  description  String
+  perks        PlacePerk[]    @relation("PlacePerks") // Khi xóa Place, xóa Perk liên quan
+  extraInfo    String
+  duration     Int // thời hạn hợp đồng
+  price        Int
+  status       PlaceStatus    @default(SEE)
+  bookings     Booking[]      @relation("PlaceBookings") // Khi xóa Place, xóa Booking liên quan
+  reports      Report[]       @relation("PlaceReports")
+  favourites   Favourite[]
+  notification Notification[]
+  createAt     DateTime       @default(now())
+  updateAt     DateTime       @updatedAt
 }
 
 enum PlaceStatus {
@@ -165,4 +167,20 @@ model Favourite {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, placeId]) // Đảm bảo mỗi user chỉ được yêu thích mỗi Place một lần
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int // Người nhận thông báo
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // Loại thông báo (booking, report, invoice)
+  message   String // Nội dung thông báo
+  read      Boolean  @default(false) // Trạng thái đã đọc
+  createdAt DateTime @default(now()) // Thời gian tạo thông báo
+  updatedAt DateTime @updatedAt // Thời gian cập nhật
+  placeId   Int? // ID của Place liên quan (nếu có)
+  place     Place?   @relation(fields: [placeId], references: [id], onDelete: Cascade) // Quan hệ với Place
+
+  // Tạo chỉ mục duy nhất cho mỗi người dùng và loại thông báo
+  @@unique([userId, type, createdAt])
 }

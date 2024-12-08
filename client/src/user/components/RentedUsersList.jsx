@@ -34,7 +34,7 @@ function RentedUsersList({ bookingRented }) {
                     onClick={handleCloseUserPopup} // Đóng khi click bên ngoài popup
                 >
                     <div
-                        className="bg-white w-full mx-96 p-6 rounded-lg relative"
+                        className="bg-white w-full lg:mx-96 mx-4 p-6 rounded-lg relative"
                         onClick={(e) => e.stopPropagation()} // Ngăn việc đóng popup khi click vào nội dung bên trong
                     >
                         <h3 className="text-2xl font-bold mb-4">Danh sách người thuê</h3>
@@ -43,7 +43,11 @@ function RentedUsersList({ bookingRented }) {
                                 <div key={booking.id} className="flex items-center border-t-2 mb-2 pt-4">
                                     <Link to={`/profile/${booking.renter.id}`}>
                                         <img
-                                            src={BASE_URL + booking.renter.avatar || 'https://via.placeholder.com/50'}
+                                            src={
+                                                booking.renter?.avatar
+                                                  ? BASE_URL + booking.renter?.avatar
+                                                  : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
+                                              }
                                             alt={booking.renter.avatar}
                                             className="w-12 h-12 rounded-full mr-3"
                                         />
@@ -77,7 +81,7 @@ function RentedUsersList({ bookingRented }) {
                     onClick={handleCloseBookingPopup} // Đóng khi click bên ngoài popup
                 >
                     <div
-                        className="bg-white p-6 w-full mx-80 rounded-lg relative"
+                        className="bg-white p-6 w-full lg:mx-[400px] mx-8 rounded-lg relative"
                         onClick={(e) => e.stopPropagation()} // Ngăn việc đóng popup khi click vào nội dung bên trong
                     >
                         <h3 className="text-2xl font-bold mb-4">Chi tiết booking</h3>
