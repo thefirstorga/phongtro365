@@ -259,6 +259,10 @@ function ProfilePage() {
             <span className="text-gray-600 font-semibold text-xl pl-4">Số zalo</span>
             <span className="text-gray-800 font-semibold text-md pr-4">{user.zalo || 'Chưa được cung cấp'}</span>
           </div>
+          <div className="flex justify-between border-b pb-4">
+            <span className="text-gray-600 font-semibold text-xl pl-4">Số lần vi phạm</span>
+            <span className="text-gray-800 font-semibold text-md pr-4">{user.violationCount}</span>
+          </div>
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end space-x-4">

@@ -75,7 +75,7 @@ model Place {
   perks        PlacePerk[]    @relation("PlacePerks") // Khi xóa Place, xóa Perk liên quan
   extraInfo    String
   duration     Int // thời hạn hợp đồng
-  price        Int
+  price        Float
   status       PlaceStatus    @default(SEE)
   bookings     Booking[]      @relation("PlaceBookings") // Khi xóa Place, xóa Booking liên quan
   reports      Report[]       @relation("PlaceReports")

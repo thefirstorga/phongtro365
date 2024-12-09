@@ -71,17 +71,18 @@ const MapComponent = ({ places }) => {
                       place.latitude && place.longitude ? (
                           <Marker key={index} position={[place.latitude, place.longitude]}>
                               <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={true}>
-                                  <div style={{ textAlign: 'center' }}>
+                                  <div className='w-36' style={{ textAlign: 'center' }}>
                                       <img
                                           src={BASE_URL + place.photos[0].url}
                                           alt="house"
                                           style={{ width: '80px', height: '50px', borderRadius: '4px' }}
                                       />
-                                      <p style={{ margin: '5px 0', fontSize: '12px', fontWeight: 'bold' }}>
-                                          {place.address}
+                                      {/* <p style={{ margin: '5px 0', fontSize: '12px', fontWeight: 'bold' }}> */}
+                                      <p className="font-bold text-sm text-gray-800 mt-1 overflow-hidden text-ellipsis line-clamp-2">
+                                        {place.address}
                                       </p>
                                       <p style={{fontSize: '12px', fontWeight: 'bold' }}>
-                                          {place.price}
+                                          {place.price} VNĐ/tháng
                                       </p>
                                   </div>
                               </Tooltip>

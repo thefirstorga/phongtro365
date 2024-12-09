@@ -130,13 +130,12 @@ function ProfileVisitPage() {
                                 className='flex gap-4 mt-4 bg-gray-200 rounded-2xl overflow-hidden shadow-md shadow-gray-500'
                                 key={place.id}
                             >
-                                <div className='w-48 h-48 relative'>
+                                <div className='w-56'>
                                     <PlaceImg place={place} />
                                 </div>
-                                <div className='py-3 pr-3 grow'>
-                                    <h2 className='text-xl'>{place.title}</h2>
-                                    <h2 className='text-lg'>{place.address}</h2>
-                                    <p className='border border-t-2 text-sm mt-2'>{place.description}</p>
+                                <div className='py-3 pr-3 grow overflow-hidden w-80'>
+                                    <h2 className='font-bold text-2xl text-gray-800 mt-1 truncate hover:truncate-none transition-all duration-300 mb-4'>{place.title}</h2>
+                                    <h2 className='text-sm text-gray-500 mt-1 line-clamp-2'>{place.address}</h2>
                                 </div>
                             </Link>
                         ))

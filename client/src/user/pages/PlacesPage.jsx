@@ -46,8 +46,8 @@ function PlacesPage() {
                 <PlaceImg place={place} />
               </div>
               <div className='py-3 pr-3 grow overflow-hidden w-80'>
-                <h2 className='font-bold text-2xl text-gray-800 mt-1 truncate hover:truncate-none transition-all duration-300 mb-4'>{place.title}</h2>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{place.description}</p>
+                <h2 className='font-bold text-2xl text-gray-800 mt-1 truncate hover:truncate-none transition-all duration-300 mb-4 '>{place.title}</h2>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{place.address}</p>
                 {place.bookings.filter((booking) => booking.status === 'PENDING').length > 0 && (
                   <p className='text-md mt-4 truncate hover:truncate-none transition-all duration-300'>
                     Có <b>{place.bookings.filter((booking) => booking.status === 'PENDING').length}</b> người đang chờ duyệt

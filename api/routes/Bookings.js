@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
         console.error("Error creating booking", error);
         res.status(500).json({ message: "Có lỗi xảy ra khi tạo booking" });
     }
-});
+}); 
 
 router.post('/cancel-booking', async (req, res) => {
     const { token } = req.cookies;
@@ -531,7 +531,7 @@ router.put('/not-rent-request', async (req, res) => {
         // Bước 3: Tạo thông báo cho chủ nhà (người thuê yêu cầu dừng thuê)
         const message = `Người thuê nhà đang yêu cầu dừng thuê nhà này.`;
 
-        await createNotification(booking.place.ownerId, 'Dừng thuê', message, booking.placeId);
+        await createNotification(booking.place.ownerId, 'Stop booking', message, booking.placeId);
 
         // Trả về kết quả sau khi cập nhật thành công
         res.json(result);
@@ -540,7 +540,6 @@ router.put('/not-rent-request', async (req, res) => {
         res.status(500).json({ error: 'Something went wrong while processing your request.' });
     }
 });
-
 
 router.put('/undo-not-rent-request', async (req, res) => {
     const {bookingId} = req.body
