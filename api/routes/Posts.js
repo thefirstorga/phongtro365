@@ -139,12 +139,26 @@ router.post('/places', (req, res) => {
     })
 })
 
-router.get('/user-places', (req, res) => {
-    const {token} = req.cookies
-    // const {token} = req.body
-    jwt.verify(token, jwtSecret, {} , async (err, userData) => {
-        const {id} = userData
-        res.json(await prisma.place.findMany({
+router.get('/user-places', async (req, res) => {
+    const { token } = req.cookies;
+
+    if (!token) {
+        return res.status(400).json({ error: 'Token is required' });
+    }
+
+    try {
+        // Kiểm tra và giải mã token
+        const userData = await new Promise((resolve, reject) => {
+            jwt.verify(token, jwtSecret, (err, decoded) => {
+                if (err) return reject(err);
+                resolve(decoded);
+            });
+        });
+
+        const { id } = userData;
+
+        // Truy vấn danh sách địa điểm từ cơ sở dữ liệu
+        const places = await prisma.place.findMany({
             where: {
                 ownerId: id
             },
@@ -152,9 +166,22 @@ router.get('/user-places', (req, res) => {
                 photos: true,
                 bookings: true
             }
-        }))
-    })
-})
+        });
+
+        // Trả về kết quả
+        res.json(places);
+    } catch (error) {
+        // Xử lý lỗi
+        console.error('Error occurred:', error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'Token has expired' });
+        }
+        res.status(500).json({ error: 'Something went wrong, please try again later' });
+    }
+});
+
 
 
 // hàm này cực kỳ quan trọng nha, thay thế cho hàm ở trên

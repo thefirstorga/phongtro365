@@ -237,8 +237,7 @@ router.post('/delete-place/:placeId', async (req, res) => {
 
         const isBlacklisted = newViolationCount > 3;
         if (isBlacklisted) {
-
-            // Xóa tất cả places của user bị BLACKLISTED
+            // Xóa tất cả places của user bị BLACKLISTED 
             await prisma.place.deleteMany({
                 where: { ownerId: place.ownerId },
             });
