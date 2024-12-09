@@ -130,7 +130,7 @@ function ProfilePage() {
   const checkHideAccountCondition = async () => {
     try {
       const response = await axios.get('/auth/check-hide-account');
-      const { result, reason } = response.data;
+      const { result, reason } = response.data; 
   
       if (result) {
         setCheckToHide(true);
@@ -258,6 +258,10 @@ function ProfilePage() {
           <div className="flex justify-between border-b pb-4">
             <span className="text-gray-600 font-semibold text-xl pl-4">Số zalo</span>
             <span className="text-gray-800 font-semibold text-md pr-4">{user.zalo || 'Chưa được cung cấp'}</span>
+          </div>
+          <div className="flex justify-between border-b pb-4">
+            <span className="text-gray-600 font-semibold text-xl pl-4">Số lần vi phạm</span>
+            <span className="text-gray-800 font-semibold text-md pr-4">{user.violationCount}</span>
           </div>
         </div>
 

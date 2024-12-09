@@ -15,19 +15,20 @@ const PriceRangeSelector = ({ minPrice, maxPrice, onChange }) => {
     <div className="w-full flex flex-col items-center space-y-4 px-4 pb-2">
       {/* Hiển thị giá trị nhỏ nhất và lớn nhất */}
       <div className="flex justify-between w-full text-sm font-medium">
-        <span>{values[0].toLocaleString()} VND</span>
-        <span>{values[1].toLocaleString()} VND</span>
+        <span>{values[0].toLocaleString()} triệu</span>
+        <span>{values[1].toLocaleString()} triệu</span>
       </div>
 
       {/* Thanh kéo giá */}
       <Range
-        step={100} // Bước giá trị di chuyển
+        step={0.1} // Bước giá trị di chuyển
         min={minPrice}
         max={maxPrice}
         values={values}
         onChange={handleRangeChange}
-        renderTrack={({ props, children }) => (
+        renderTrack={({ props, children, key }) => (
           <div
+            key={key}
             {...props}
             className="w-full h-2 bg-gray-200 rounded-lg z-0"
             style={{
@@ -46,8 +47,8 @@ const PriceRangeSelector = ({ minPrice, maxPrice, onChange }) => {
             {children}
           </div>
         )}
-        renderThumb={({ props }) => (
-          <div
+        renderThumb={({ props, key }) => (
+          <div key={key}
             {...props}
             className="w-4 h-4 bg-pink-500 rounded-full shadow-md focus:outline-none"
           />

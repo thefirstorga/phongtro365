@@ -39,7 +39,7 @@ function UsersPage() {
                   href={`/profile/${user.id}`} target="_blank"
                 >
                   <img
-                    src={user.avatar ? BASE_URL + user.avatar : 'https://via.placeholder.com/150'}
+                    src={user.avatar ? BASE_URL + user.avatar : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'}
                     alt={user.name}
                     className="w-16 h-16 rounded-full object-cover"
                   />
@@ -69,7 +69,7 @@ function UsersPage() {
             <div key={user.id} className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-all border-2 border-red-500">
               <div className="flex items-center space-x-4">
                 <img
-                  src={user.avatar ? `/avatars/${user.avatar}` : 'https://via.placeholder.com/150'}
+                  src={user.avatar ? BASE_URL + user.avatar : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'}
                   alt={user.name}
                   className="w-16 h-16 rounded-full object-cover"
                 />

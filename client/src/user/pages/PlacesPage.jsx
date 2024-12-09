@@ -35,7 +35,7 @@ function PlacesPage() {
     <div className='mt-8'>
       <h2 className='text-2xl font-bold mb-4'>{title}</h2>
       {placesList.length > 0 ? (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 lg:gap-8'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {placesList.map(place => (
             <Link
               to={'/place/' + place.id}
@@ -46,8 +46,8 @@ function PlacesPage() {
                 <PlaceImg place={place} />
               </div>
               <div className='py-3 pr-3 grow overflow-hidden w-80'>
-                <h2 className='font-bold text-2xl text-gray-800 mt-1 truncate hover:truncate-none transition-all duration-300 mb-4'>{place.title}</h2>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{place.description}</p>
+                <h2 className='font-bold text-2xl text-gray-800 mt-1 truncate hover:truncate-none transition-all duration-300 mb-4 '>{place.title}</h2>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-1">{place.address}</p>
                 {place.bookings.filter((booking) => booking.status === 'PENDING').length > 0 && (
                   <p className='text-md mt-4 truncate hover:truncate-none transition-all duration-300'>
                     Có <b>{place.bookings.filter((booking) => booking.status === 'PENDING').length}</b> người đang chờ duyệt

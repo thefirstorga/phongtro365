@@ -12,6 +12,25 @@ router.use(cookieParser())
 const bcryptSalt = bcrypt.genSaltSync(10)
 const jwtSecret = 'fhdjskahdfjkdsafhjdshakjhf'
 
+const createNotification = async (userId, type, message, placeId = null) => {
+    let parsedPlaceId
+    if(typeof placeId === 'number') parsedPlaceId = placeId
+    else if(typeof placeId !== 'number') parsedPlaceId = parseInt(placeId)
+
+    try {
+      await prisma.notification.create({
+        data: {
+          userId,
+          type,
+          message,
+          placeId: parsedPlaceId,  // Lưu placeId nếu có
+        },
+      });
+    } catch (error) {
+      console.error("Error creating notification", error);
+    }
+};
+
 router.get('/check-admin', async (req, res) => {
     const admin = await prisma.admin.findFirst();
 
@@ -201,6 +220,9 @@ router.post('/delete-place/:placeId', async (req, res) => {
             },
         });
 
+        const message = `Ngôi nhà của bạn đã bị ban và không thể tiếp tục hoạt động.`;
+        await createNotification(place.ownerId, 'Kết quả report', message, placeId);
+
         // Tăng violationCount của chủ nhà và kiểm tra trạng thái BLACKLISTED
         const newViolationCount = place.owner.violationCount + 1;
         const newStatus = newViolationCount > 3 ? 'BLACKLISTED' : place.owner.status;
@@ -215,8 +237,7 @@ router.post('/delete-place/:placeId', async (req, res) => {
 
         const isBlacklisted = newViolationCount > 3;
         if (isBlacklisted) {
-
-            // Xóa tất cả places của user bị BLACKLISTED
+            // Xóa tất cả places của user bị BLACKLISTED 
             await prisma.place.deleteMany({
                 where: { ownerId: place.ownerId },
             });

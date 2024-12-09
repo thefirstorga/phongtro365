@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import axios from 'axios';
 import { BASE_URL } from '../../config';
+import NotificationButton from './NotificationButton';
 
 function Header() {
   const { user, setUser } = useContext(UserContext);
@@ -40,110 +41,111 @@ function Header() {
           </svg>
           <span className="font-bold text-xl">phongtro365</span>
         </Link>
-
-        {/* User Section */}
-        <div ref={menuRef} className="relative">
-          {/* Nếu chưa đăng nhập */}
-          {!user && (
-            <Link
-              to="/login"
-              className="flex items-center gap-2 border border-gray-300 rounded-full py-1 px-1 cursor-pointer"
-            >
-              <div className="bg-gray-500 text-white rounded-full border border-gray-500">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="size-11"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </Link>
-          )}
-
-          {/* Nếu đã đăng nhập */}
-          {!!user && (
-            <div>
-              <div
-                className="flex items-center gap-2 border border-gray-300 rounded-full py-1 px-1 cursor-pointer relative"
-                onClick={() => setMenuOpen(!menuOpen)}
+        <div className='flex gap-2'>
+          {user && <NotificationButton />}
+          {/* User Section */}
+          <div ref={menuRef} className="relative">
+            {/* Nếu chưa đăng nhập */}
+            {!user && (
+              <Link
+                to="/login"
+                className="flex items-center gap-2 border border-gray-300 rounded-full py-1 px-1 cursor-pointer"
               >
-                <img
-                  src={ 
-                    user?.avatar 
-                      ? BASE_URL + user.avatar
-                      : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
-                  }
-                  alt="Avatar"
-                  className="rounded-full w-11 h-11 object-cover"
-                />
-                {/* Mũi tên ở góc dưới bên phải */}
-                <div className="absolute bottom-0 right-0 bg-gray-700 text-white rounded-full p-1">
+                <div className="bg-gray-500 text-white rounded-full border border-gray-500">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
                     viewBox="0 0 24 24"
-                    className="w-3 h-3"
+                    fill="currentColor"
+                    className="size-11"
                   >
                     <path
                       fillRule="evenodd"
-                      d="M12 16.5c-.18 0-.36-.06-.5-.18l-5-4a.75.75 0 1 1 1-.84l4.5 3.6 4.5-3.6a.75.75 0 1 1 1 .84l-5 4c-.14.12-.32.18-.5.18Z"
+                      d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
                       clipRule="evenodd"
                     />
                   </svg>
                 </div>
-              </div>
-              {menuOpen && (
-                <div className="absolute lg:left-0 right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                  <div
-                    className="block px-4 py-2 hover:bg-gray-100 border-b-2"
-                    onClick={() => setMenuOpen(false)} // Đóng menu
-                  >
-                    {user.email}
+              </Link>
+            )}
+            {/* Nếu đã đăng nhập */}
+            {!!user && (
+              <div>
+                <div
+                  className="flex items-center gap-2 border border-gray-300 rounded-full py-1 px-1 cursor-pointer relative"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                >
+                  <img
+                    src={
+                      user?.avatar
+                        ? BASE_URL + user.avatar
+                        : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'
+                    }
+                    alt="Avatar"
+                    className="rounded-full w-11 h-11 object-cover"
+                  />
+                  {/* Mũi tên ở góc dưới bên phải */}
+                  <div className="absolute bottom-0 right-0 bg-gray-700 text-white rounded-full p-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      className="w-3 h-3"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M12 16.5c-.18 0-.36-.06-.5-.18l-5-4a.75.75 0 1 1 1-.84l4.5 3.6 4.5-3.6a.75.75 0 1 1 1 .84l-5 4c-.14.12-.32.18-.5.18Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </div>
-                  <Link
-                    to="/account" 
-                    className="block px-4 py-2 hover:bg-gray-100"
-                    onClick={() => setMenuOpen(false)} // Đóng menu
-                  >
-                    Trang cá nhân
-                  </Link>
-                  <Link
-                    to="/account/bookings"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                    onClick={() => setMenuOpen(false)} // Đóng menu
-                  >
-                    Booking của bạn
-                  </Link>
-                  <Link
-                    to="/account/places"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                    onClick={() => setMenuOpen(false)} // Đóng menu
-                  >
-                    Nhà của bạn
-                  </Link>
-                  <Link
-                    to="/account/favourites"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                    onClick={() => setMenuOpen(false)} // Đóng menu
-                  >
-                    Nhà yêu thích
-                  </Link>
-                  <button
-                    onClick={logout}
-                    className="w-full text-left block px-4 py-2 text-red-500 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
                 </div>
-              )}
-            </div>
-          )}
+                {menuOpen && (
+                  <div className="absolute lg:left-0 right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                    <div
+                      className="block px-4 py-2 hover:bg-gray-100 border-b-2"
+                      onClick={() => setMenuOpen(false)} // Đóng menu
+                    >
+                      {user.email}
+                    </div>
+                    <Link
+                      to="/account"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                      onClick={() => setMenuOpen(false)} // Đóng menu
+                    >
+                      Trang cá nhân
+                    </Link>
+                    <Link
+                      to="/account/bookings"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                      onClick={() => setMenuOpen(false)} // Đóng menu
+                    >
+                      Booking của bạn
+                    </Link>
+                    <Link
+                      to="/account/places"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                      onClick={() => setMenuOpen(false)} // Đóng menu
+                    >
+                      Nhà của bạn
+                    </Link>
+                    <Link
+                      to="/account/favourites"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                      onClick={() => setMenuOpen(false)} // Đóng menu
+                    >
+                      Nhà yêu thích
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="w-full text-left block px-4 py-2 text-red-500 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
     </div>

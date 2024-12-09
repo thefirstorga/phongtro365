@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 
 function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [redirect, setRedirect] = useState(false);
     const [errorMessage, setErrorMessage] = useState(''); // Hiển thị lỗi chung
     const [passwordValid, setPasswordValid] = useState(false); // Trạng thái mật khẩu
+    const [errors, setErrors] = useState({ name: '', email: '', password: '' }); // Lỗi cho từng trường
 
     const handlePasswordChange = (ev) => {
         const newPassword = ev.target.value;
@@ -21,13 +23,44 @@ function RegisterPage() {
         }
     };
 
+    const handleInputChange = (field, value) => {
+        if (field === 'name') setName(value);
+        if (field === 'email') setEmail(value);
+        if (field === 'password') setPassword(value);
+
+        setErrors((prevErrors) => ({ ...prevErrors, [field]: '' })); // Reset lỗi khi người dùng nhập lại
+    };
+
     async function registerUser(ev) {
         ev.preventDefault();
         setErrorMessage(''); // Reset thông báo lỗi
+        setErrors({ name: '', email: '', password: '' }); // Reset lỗi cho từng trường
+
+        let isValid = true;
+        const newErrors = { name: '', email: '', password: '' };
+
+        // Kiểm tra các trường bắt buộc
+        if (!name) {
+            newErrors.name = 'Tên không được để trống!';
+            isValid = false;
+        }
+        if (!email) {
+            newErrors.email = 'Email không được để trống!';
+            isValid = false;
+        }
+        if (!password) {
+            newErrors.password = 'Mật khẩu không được để trống!';
+            isValid = false;
+        }
 
         if (!passwordValid) {
-            setErrorMessage('Mật khẩu không đáp ứng yêu cầu.');
-            return;
+            newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự!';
+            isValid = false;
+        }
+
+        if (!isValid) {
+            setErrors(newErrors);
+            return; // Dừng việc gửi yêu cầu nếu có lỗi
         }
 
         try {
@@ -37,6 +70,7 @@ function RegisterPage() {
                 password,
             });
             alert('Đăng ký thành công! Vui lòng đăng nhập.');
+            setRedirect(true);
         } catch (error) {
             if (error.response?.status === 400) {
                 setErrorMessage(error.response.data.error);
@@ -45,6 +79,8 @@ function RegisterPage() {
             }
         }
     }
+
+    if (redirect) return <Navigate to={'/login'} />;
 
     return (
         <div className="mt-4 grow flex items-center justify-around">
@@ -55,28 +91,34 @@ function RegisterPage() {
                         type="text"
                         placeholder="Tran Tam"
                         value={name}
-                        onChange={(ev) => setName(ev.target.value)}
+                        onChange={(ev) => handleInputChange('name', ev.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded"
                     />
+                    {errors.name && <span className="text-red-500 text-sm">{errors.name}</span>}
+
                     <input
                         type="email"
                         placeholder="your@email.com"
                         value={email}
-                        onChange={(ev) => setEmail(ev.target.value)}
+                        onChange={(ev) => handleInputChange('email', ev.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded"
                     />
+                    {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
+
                     <input
                         type="password"
                         placeholder="yourpassword"
                         value={password}
                         onChange={handlePasswordChange} // Sử dụng hàm kiểm tra mật khẩu
+                        className="w-full px-4 py-2 border border-gray-300 rounded"
                     />
+                    {errors.password && <span className="text-red-500 text-sm">{errors.password}</span>}
 
                     {/* Hiển thị trạng thái mật khẩu */}
                     <div className="mt-2 text-sm">
                         {password.length > 0 && (
                             <span
-                                className={`font-semibold ${
-                                    passwordValid ? 'text-green-500' : 'text-red-500'
-                                }`}
+                                className={`font-semibold ${passwordValid ? 'text-green-500' : 'text-red-500'}`}
                             >
                                 {passwordValid
                                     ? 'Mật khẩu đáp ứng yêu cầu!'

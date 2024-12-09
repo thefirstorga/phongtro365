@@ -4,20 +4,22 @@ import Perks from '../components/Perks';
 import axios from 'axios';
 import LocationPicker from '../components/LocationPicker';
 import { Navigate, useParams } from 'react-router-dom';
+import ReactQuill from 'react-quill'; // Import ReactQuill
+import 'react-quill/dist/quill.snow.css'; // Import CSS cho Quill
 
 function PlacesFormPage() {
-    const {id} = useParams();
+    const { id } = useParams();
     const [title, setTitle] = useState('');
     const [address, setAddress] = useState('');
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
-    const [description, setDescription] = useState('');
+    const [description, setDescription] = useState(''); // Use Quill for this
     const [addedPhotos, setAddedPhotos] = useState([]);
     const [perks, setPerks] = useState([]);
-    const [extraInfo, setExtraInfo] = useState('');
+    const [extraInfo, setExtraInfo] = useState(''); // Use Quill for this
     const [area, setArea] = useState(30);
     const [duration, setDuration] = useState(6);
-    const [price, setPrice] = useState(100);
+    const [price, setPrice] = useState(2.5);
     const [redirect, setRedirect] = useState(false);
     
     // Error states for each field
@@ -49,27 +51,6 @@ function PlacesFormPage() {
             setPrice(data.price);
         });
     }, [id]);
-
-    function inputHeader(text) {
-        return (
-            <h2 className='text-2xl mt-4'>{text}</h2>
-        );
-    }
-
-    function inputDescription(text) {
-        return (
-            <p className='text-gray-500 text-sm'>{text}</p>
-        );
-    }
-
-    function preInput(header, description) {
-        return (
-            <>
-                {inputHeader(header)}
-                {inputDescription(description)}
-            </>
-        );
-    }
 
     // Hàm kiểm tra tính hợp lệ
     function validateForm() {
@@ -159,12 +140,22 @@ function PlacesFormPage() {
         };
     }
 
+    // Định nghĩa lại hàm preInput
+    function preInput(header, description) {
+        return (
+            <>
+                <h2 className='text-2xl mt-4'>{header}</h2>
+                <p className='text-gray-500 text-sm'>{description}</p>
+            </>
+        );
+    }
+
     if (redirect) return <Navigate to={'/account/places'} />;
 
     return (
         <div>
             <form onSubmit={savePlace}>
-                {preInput('Tiêu đề', 'Nhập tiêu đề của bạn')}
+                {preInput('Tiêu đề *', 'Nhập tiêu đề của bạn')}
                 <input 
                     type='text' 
                     value={title}
@@ -173,8 +164,8 @@ function PlacesFormPage() {
                     className={titleError ? 'border-red-500' : ''}
                 />
                 {titleError && <p className="text-red-500 text-sm">{titleError}</p>}
-                
-                {preInput('Địa chỉ', 'Nhập địa chỉ nhà bạn')}
+
+                {preInput('Địa chỉ *', 'Nhập địa chỉ nhà bạn')}
                 <input 
                     type='text' 
                     value={address}
@@ -183,7 +174,7 @@ function PlacesFormPage() {
                     className={addressError ? 'border-red-500' : ''}
                 />
                 {addressError && <p className="text-red-500 text-sm">{addressError}</p>}
-                
+
                 <h2 className="text-2xl mt-4">Chọn trên bản đồ</h2>
                 {latitude && (
                     <p>(Bạn đã chọn địa chỉ, tuy nhiên vẫn có thể đổi)</p>
@@ -196,16 +187,17 @@ function PlacesFormPage() {
                         setLongitude(longitude);
                     }}
                 />
-                
-                {preInput('Hình ảnh', 'Chọn hình ảnh')}
+
+                {preInput('Hình ảnh *', 'Chọn hình ảnh')}
                     <PhotoUploader addedPhotos={addedPhotos} setAddedPhotos={setAddedPhotos} />
                 {photosError && <p className="text-red-500 text-sm">{photosError}</p>}
 
-                {preInput('Mô tả', 'Vui lòng mô tả chi tiết nhà bạn')}
-                <textarea 
+                {preInput('Mô tả *', 'Vui lòng mô tả chi tiết nhà bạn')}
+                <ReactQuill 
                     value={description} 
-                    onChange={handleInputChange(setDescription, setDescriptionError)} 
+                    onChange={setDescription} 
                     className={descriptionError ? 'border-red-500' : ''}
+                    placeholder="Nhập mô tả nhà bạn"
                 />
                 {descriptionError && <p className="text-red-500 text-sm">{descriptionError}</p>}
 
@@ -215,9 +207,13 @@ function PlacesFormPage() {
                 </div>
 
                 {preInput('Thông tin thêm', 'Nhập thông tin thêm của nhà')}
-                <textarea value={extraInfo} onChange={ev => setExtraInfo(ev.target.value)} />
+                <ReactQuill 
+                    value={extraInfo} 
+                    onChange={setExtraInfo} 
+                    placeholder="Nhập thông tin thêm về nhà"
+                />
 
-                {preInput('Diện tích - Thời hạn hợp đồng - Giá', 'Nhập đầy đủ 3 trường sau')}
+                {preInput('Diện tích - Thời hạn hợp đồng - Giá *', 'Nhập đầy đủ 3 trường sau')}
                 <div className='grid gap-2 sm:grid-cols-3 lg:grid-cols-3'>
                     <div>
                         <h3 className='mt-2 -mb-1'>Diện tích - mét vuông</h3>
@@ -240,7 +236,7 @@ function PlacesFormPage() {
                         {durationError && <p className="text-red-500 text-sm">{durationError}</p>}
                     </div>
                     <div>
-                        <h3 className='mt-2 -mb-1'>Giá - VNĐ/tháng</h3>
+                        <h3 className='mt-2 -mb-1'>Giá - triệu/tháng</h3>
                         <input 
                             type="number" 
                             value={price}

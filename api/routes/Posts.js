@@ -21,6 +21,20 @@ const cookieParser = require('cookie-parser')
 router.use(cookieParser())
 const jwtSecret = 'fhdjskahdfjkdsafhjdshakjhf'
 
+const createNotification = async (userId, type, message, placeId = null) => {
+    try {
+      await prisma.notification.create({
+        data: {
+          userId,
+          type,
+          message,
+          placeId: parseInt(placeId),  // Lưu placeId nếu có
+        },
+      });
+    } catch (error) {
+      console.error("Error creating notification", error);
+    }
+};
 
 router.post('/upload-by-link', async (req, res) => {
     const {link} = req.body
@@ -125,12 +139,26 @@ router.post('/places', (req, res) => {
     })
 })
 
-router.get('/user-places', (req, res) => {
-    const {token} = req.cookies
-    // const {token} = req.body
-    jwt.verify(token, jwtSecret, {} , async (err, userData) => {
-        const {id} = userData
-        res.json(await prisma.place.findMany({
+router.get('/user-places', async (req, res) => {
+    const { token } = req.cookies;
+
+    if (!token) {
+        return res.status(400).json({ error: 'Token is required' });
+    }
+
+    try {
+        // Kiểm tra và giải mã token
+        const userData = await new Promise((resolve, reject) => {
+            jwt.verify(token, jwtSecret, (err, decoded) => {
+                if (err) return reject(err);
+                resolve(decoded);
+            });
+        });
+
+        const { id } = userData;
+
+        // Truy vấn danh sách địa điểm từ cơ sở dữ liệu
+        const places = await prisma.place.findMany({
             where: {
                 ownerId: id
             },
@@ -138,9 +166,22 @@ router.get('/user-places', (req, res) => {
                 photos: true,
                 bookings: true
             }
-        }))
-    })
-})
+        });
+
+        // Trả về kết quả
+        res.json(places);
+    } catch (error) {
+        // Xử lý lỗi
+        console.error('Error occurred:', error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'Token has expired' });
+        }
+        res.status(500).json({ error: 'Something went wrong, please try again later' });
+    }
+});
+
 
 
 // hàm này cực kỳ quan trọng nha, thay thế cho hàm ở trên
@@ -463,7 +504,7 @@ router.put('/hidden-home/:placeId', async (req, res) => {
         });
 
         res.status(200).json({
-            message: `Trạng thái của Place đã được chuyển đổi thành ${newStatus}.`,
+            message: `Trạng thái của nhà này đã được đổi thành công.`,
             updatedPlace,
         });
     } catch (error) {
@@ -472,9 +513,37 @@ router.put('/hidden-home/:placeId', async (req, res) => {
     }
 });
 
+// router.post('/add-report', async (req, res) => {
+//     const {token} = req.cookies
+//     const {reason, placeId} = req.body
+
+//     jwt.verify(token, jwtSecret, async (err, userData) => {
+//         if (err) {
+//             return res.status(401).json({ message: 'Token không hợp lệ.' });
+//         }
+
+//         const userId = userData.id;
+
+//         try {
+//             // Tạo report
+//             await prisma.report.create({
+//                 data: {
+//                     reporterId: userId,
+//                     reason: reason,
+//                     placeId: parseInt(placeId, 10)
+//                 }
+//             });
+//             return res.status(200).json({ message: 'Report đã được gửi cho admin' });
+//         } catch (error) {
+//             console.error(error);
+//             return res.status(500).json({ message: 'Có lỗi xảy ra khi xóa tài khoản.' });
+//         }
+//     });
+// })
+
 router.post('/add-report', async (req, res) => {
-    const {token} = req.cookies
-    const {reason, placeId} = req.body
+    const { token } = req.cookies;
+    const { reason, placeId } = req.body;
 
     jwt.verify(token, jwtSecret, async (err, userData) => {
         if (err) {
@@ -485,20 +554,39 @@ router.post('/add-report', async (req, res) => {
 
         try {
             // Tạo report
-            await prisma.report.create({
+            const report = await prisma.report.create({
                 data: {
                     reporterId: userId,
                     reason: reason,
                     placeId: parseInt(placeId, 10)
                 }
             });
-            return res.status(200).json({ message: 'Report đã được gửi cho admin' });
+
+            // phần tạo thông báo
+            // Lấy thông tin chủ của place
+            const place = await prisma.place.findUnique({
+                where: {
+                    id: parseInt(placeId),
+                },
+                select: {
+                    ownerId: true, // Lấy ownerId của place
+                },
+            });
+
+            if (!place) {
+                return res.status(404).json({ message: 'Place không tồn tại.' });
+            }
+
+            const ownerId = place.ownerId;
+            createNotification(ownerId, 'Report', `Có một báo cáo về nhà này.`, placeId)
+
+            return res.status(200).json({ message: 'Report đã được gửi cho admin và chủ nhà.' });
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: 'Có lỗi xảy ra khi xóa tài khoản.' });
+            return res.status(500).json({ message: 'Có lỗi xảy ra khi tạo báo cáo.' });
         }
     });
-})
+});
 
 router.get('/comments/:placeId', async (req, res) => {
     const { placeId } = req.params;
@@ -708,7 +796,79 @@ router.get('/favourites', async (req, res) => {
     } else {
       res.status(401).json({ message: 'Unauthorized' });
     }
-  });
+});
+  
+// API: Lấy thông báo của người dùng
+router.get('/notifications', async (req, res) => {
+    const { token } = req.cookies;
+    // const { token } = req.body;
+  
+    jwt.verify(token, jwtSecret, async (err, userData) => {
+      if (err) {
+        return res.status(401).json({ message: 'Token không hợp lệ.' });
+      }
+  
+      const userId = userData.id;
+  
+      try {
+        // Lấy thông báo của người dùng, giới hạn 5 thông báo mới nhất
+        const notifications = await prisma.notification.findMany({
+          where: { userId: userId },
+          orderBy: { createdAt: 'desc' },
+        //   take: 5,
+          include: {
+            place: {
+              select: {
+                id: true,
+                photos: {
+                  take: 1,
+                  select: {
+                    url: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+  
+        const unreadCount = await prisma.notification.count({
+          where: {
+            userId: userId,
+            read: false,
+          },
+        });
+  
+        return res.status(200).json({ notifications, unreadCount });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Có lỗi xảy ra khi lấy thông báo.' });
+      }
+    });
+});
+
+// API: Đánh dấu thông báo là đã đọc
+router.post('/mark-as-read', async (req, res) => {
+    const { token } = req.cookies;
+    const { notificationId } = req.body;
+  
+    jwt.verify(token, jwtSecret, async (err, userData) => {
+      if (err) {
+        return res.status(401).json({ message: 'Token không hợp lệ.' });
+      }
+  
+      try {
+        await prisma.notification.update({
+          where: { id: notificationId },
+          data: { read: true },
+        });
+  
+        return res.status(200).json({ message: 'Đã đánh dấu thông báo là đã đọc.' });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Có lỗi xảy ra khi đánh dấu đã đọc.' });
+      }
+    });
+});
   
 
 module.exports = router;
