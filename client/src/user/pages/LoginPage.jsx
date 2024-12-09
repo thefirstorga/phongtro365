@@ -6,7 +6,6 @@ import { UserContext } from "../components/UserContext";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [redirect, setRedirect] = useState(false);
   const { setUser } = useContext(UserContext);
   const [isBlacklisted, setIsBlacklisted] = useState(false); // Trạng thái BLACKLISTED
   const [blacklistedMessage, setBlacklistedMessage] = useState(""); // Thông báo cho BLACKLISTED
@@ -22,7 +21,7 @@ export default function LoginPage() {
         } else {
             setUser(data.user);
             alert("Đăng nhập thành công");
-            setRedirect(true);
+            window.location.reload()
         }
     } catch (error) {
         if (error.response) {
@@ -42,10 +41,6 @@ export default function LoginPage() {
 
   async function handleLogout() {
     window.location.reload()
-  }
-
-  if (redirect) {
-    return <Navigate to="/" />;
   }
 
   return (

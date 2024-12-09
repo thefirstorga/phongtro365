@@ -130,7 +130,7 @@ function ProfilePage() {
   const checkHideAccountCondition = async () => {
     try {
       const response = await axios.get('/auth/check-hide-account');
-      const { result, reason } = response.data;
+      const { result, reason } = response.data; 
   
       if (result) {
         setCheckToHide(true);

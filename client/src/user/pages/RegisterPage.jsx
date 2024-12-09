@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 
 function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [redirect, setRedirect] = useState(false)
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState(''); // Hiển thị lỗi chung
     const [passwordValid, setPasswordValid] = useState(false); // Trạng thái mật khẩu
@@ -37,6 +38,7 @@ function RegisterPage() {
                 password,
             });
             alert('Đăng ký thành công! Vui lòng đăng nhập.');
+            setRedirect(true)
         } catch (error) {
             if (error.response?.status === 400) {
                 setErrorMessage(error.response.data.error);
@@ -45,6 +47,8 @@ function RegisterPage() {
             }
         }
     }
+
+    if(redirect) <Navigate to={'/login'}/>
 
     return (
         <div className="mt-4 grow flex items-center justify-around">

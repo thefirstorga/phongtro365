@@ -10,7 +10,6 @@ import PlacesPage from './pages/PlacesPage';
 import PlacesFormPage from './pages/PlacesFormPage';
 import PlacePage from './pages/PlacePage';
 import BookingsPage from './pages/BookingsPage';
-import BookingPage from './pages/BookingPage';
 import ProfileVisitPage from './pages/ProfileVisitPage';
 import { RedirectIfAuthenticated } from './components/RedirectIfAuthenticated';
 import { RequireAuth } from './components/RequireAuth';
@@ -61,7 +60,6 @@ function App() {
           <Route path="/place/:id" element={<PlacePage />} />
           <Route path="/account/bookings" element={<BookingsPage />} />
           <Route path="/account/favourites" element={<FavouritePage />} />
-          {/* <Route path="/account/bookings/:id" element={<BookingPage />}  /> */}
           <Route path="/profile/:id" element={<ProfileVisitPage />} />
         </Route>
       </Routes>

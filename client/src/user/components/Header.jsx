@@ -42,7 +42,7 @@ function Header() {
           <span className="font-bold text-xl">phongtro365</span>
         </Link>
         <div className='flex gap-2'>
-          <NotificationButton />
+          {user && <NotificationButton />}
           {/* User Section */}
           <div ref={menuRef} className="relative">
             {/* Nếu chưa đăng nhập */}

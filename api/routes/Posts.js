@@ -477,7 +477,7 @@ router.put('/hidden-home/:placeId', async (req, res) => {
         });
 
         res.status(200).json({
-            message: `Trạng thái của Place đã được chuyển đổi thành ${newStatus}.`,
+            message: `Trạng thái của nhà này đã được đổi thành công.`,
             updatedPlace,
         });
     } catch (error) {

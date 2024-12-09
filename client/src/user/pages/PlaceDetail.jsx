@@ -461,7 +461,7 @@ function PlaceDetail() {
                     <div className='grid grid-cols-3 gap-1 border-t-2 pt-4 pl-4'>
                         <p className="text-gray-800 font-bold">Diện tích: {place.area} m²</p>
                         <p className="text-gray-800 font-bold">Thời gian thuê: {place.duration} tháng</p>
-                        <p className="text-gray-800 font-bold">Giá thuê: {place.price} VNĐ/tháng</p>
+                        <p className="text-gray-800 font-bold">Giá thuê: {place.price} triệu/tháng</p>
                     </div>
                 </div>
             </div>
@@ -470,7 +470,7 @@ function PlaceDetail() {
             <div className="bg-gray-100 px-8 py-8 border-t mt-6 rounded-lg shadow-md">
                 <h2 className="font-semibold text-2xl text-gray-800">Dịch vụ</h2>
                 {place.perks.length > 0 ? (
-                    <div className='flex gap-3 mt-4'>
+                    <div className='grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mt-4'>
                         <label className={`w-full border p-4 flex rounded-2xl gap-2 items-center ${place.perks.some(item => item.perk === 'wifi') ? 'bg-blue-300' : 'text-gray-400'}`}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
@@ -517,12 +517,16 @@ function PlaceDetail() {
             {/* Extra Info Section */}
             <div className="bg-gray-100 px-8 py-8 border-t mt-6 rounded-lg shadow-md">
                 <h2 className="font-semibold text-2xl text-gray-800">Thông tin thêm</h2>
-                <p className="text-gray-600 mt-4 leading-6">
-                    <div 
-                        className='pt-2'
-                        dangerouslySetInnerHTML={{ __html: place.extraInfo }} 
-                    ></div>
-                </p>
+                {place.extraInfo ? (
+                    <p className="text-gray-600 mt-4 leading-6">
+                        <div 
+                            className='pt-2'
+                            dangerouslySetInnerHTML={{ __html: place.extraInfo }} 
+                        ></div>
+                    </p>
+                ) : (
+                    <p>Chưa có thông tin</p>
+                )}
             </div>
 
             {/* History section */}

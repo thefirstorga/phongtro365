@@ -37,7 +37,7 @@ function MapIndexPage({ places }) {
     }
 
     // Default position nếu không có tọa độ
-    const defaultPosition = [10.762622, 106.660172]; // Tọa độ TP. Hồ Chí Minh
+    const defaultPosition = [21.03024635708223, 105.8406867001505]; // Tọa độ TP. Hồ Chí Minh
 
     return (
         <MapContainer

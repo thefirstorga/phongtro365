@@ -144,10 +144,10 @@ function IndexPage() {
           {/* Thanh chọn giá */}
           {minPrice<maxPrice ? (
             <PriceRangeSelector
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            onChange={handleRangeChange}
-          />
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              onChange={handleRangeChange}
+            />
           ) : (
             <div className="flex items-center justify-center h-full border-2 border-gray-300 rounded-xl">
               <p className="text-xl text-gray-500 font-bold">Các nhà này đang cùng 1 giá!</p>
@@ -187,9 +187,9 @@ function IndexPage() {
                     {place.address}
                   </h3>
 
-                  <div className="mt-2 flex items-center justify-between">
+                  <div className="mt-2 flex items-center justify-end gap-2">
                     <span className="font-bold text-lg text-blue-600">{place.price}</span>
-                    <span className="text-sm text-gray-600">VNĐ/tháng</span>
+                    <span className="text-lg text-gray-600">triệu/tháng</span>
                   </div>
                 </div>
               </Link>

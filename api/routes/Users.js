@@ -279,7 +279,7 @@ router.get('/check-hide-account', async (req, res) => {
             if (pendingBookings) {
                 return res.json({
                     result: false,
-                    reason: 'Bạn đang có booking liên quan với trạng thái APPROVED.',
+                    reason: 'Bạn đang có người thuê nên không thể ẩn tài khoản.',
                 });
             }
 
@@ -334,7 +334,7 @@ router.get('/check-delete-account', async (req, res) => {
             if (pendingBookings) {
                 return res.json({
                     result: 'CANNOT_DELETE_YET',
-                    reason: 'Tài khoản của bạn đang có booking với trạng thái RENTED.',
+                    reason: 'Tài khoản của bạn đang có booking.',
                 });
             }
 
@@ -351,7 +351,7 @@ router.get('/check-delete-account', async (req, res) => {
             if (pendingReports) {
                 return res.json({
                     result: 'CANNOT_DELETE_YET',
-                    reason: 'Tài khoản của bạn có bài đăng đang bị báo cáo với trạng thái PENDING.',
+                    reason: 'Tài khoản của bạn có bài đăng đang bị báo cáo chưa được xử lý.',
                 });
             }
 
@@ -368,7 +368,7 @@ router.get('/check-delete-account', async (req, res) => {
             if (doneReports) {
                 return res.json({
                     result: 'CANNOT_DELETE',
-                    reason: 'Tài khoản của bạn có bài đăng bị báo cáo với trạng thái DONE. Tài khoản không thể bị xóa.',
+                    reason: 'Tài khoản của bạn có bài đăng bị báo cáo. Tài khoản không thể bị xóa.',
                 });
             }
 
