@@ -14,6 +14,8 @@ import ProfileVisitPage from './pages/ProfileVisitPage';
 import { RedirectIfAuthenticated } from './components/RedirectIfAuthenticated';
 import { RequireAuth } from './components/RequireAuth';
 import FavouritePage from './pages/FavouritePage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 axios.defaults.baseURL = 'http://localhost:4000';
 axios.defaults.withCredentials = true;
@@ -25,6 +27,8 @@ function App() {
         {/* Route công khai không yêu cầu đăng nhập */}
         <Route path="/" element={<Layout />}>
           <Route index element={<IndexPage />} />
+          <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+          <Route path='/reset-password' element={<ResetPasswordPage />} />
           
           <Route
             path="/login"

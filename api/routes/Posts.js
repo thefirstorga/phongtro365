@@ -249,7 +249,21 @@ router.get('/user-places', async (req, res) => {
 
 router.get('/place/:id', async (req, res) => {
     const { id } = req.params;
+    const { token } = req.cookies;
     try {
+        let userId = null;
+
+        // Giải mã token để lấy userId
+        if (token) {
+            jwt.verify(token, jwtSecret, (err, userData) => {
+                if (err) {
+                    console.error('Invalid JWT:', err);
+                } else {
+                    userId = userData.id; // Lấy userId từ JWT
+                }
+            });
+        }
+
         const place = await prisma.place.findUnique({
             where: { id: parseInt(id, 10) },
             include: {
@@ -263,7 +277,8 @@ router.get('/place/:id', async (req, res) => {
                         phone: true,
                         zalo: true,
                         violationCount: true,
-                        createAt: true
+                        createAt: true,
+                        status: true
                     },
                 },
                 bookings: { // Lấy các booking liên quan
@@ -295,6 +310,14 @@ router.get('/place/:id', async (req, res) => {
 
         if (!place) {
             return res.status(404).json({ message: 'Place không tồn tại' });
+        }
+
+        // Kiểm tra trạng thái của Place và Owner
+        if (place.status !== 'SEE' || place.owner.status !== 'ACTIVE') {
+            // Nếu userId (chủ nhà) trùng với ownerId của place, vẫn trả về Place
+            if (userId !== place.ownerId) {
+                return res.status(404).json({ message: 'Place không tồn tại' });
+            }
         }
 
         res.json({ place });
@@ -374,10 +397,11 @@ router.put('/places/:id', async (req, res) => {
                 address, latitude, longitude,
                 description,
                 extraInfo,
-                area, price,
-                duration,
+                area: parseInt(area), 
+                price: parseFloat(price),
+                duration: parseInt(duration),
                 photos: {
-                    create: addedPhotos.map(photo => ({ url: photo })), // Thêm các ảnh mới
+                    create: addedPhotos.map(photo => ({ url: photo })), // Thêm các ảnh mới 
                 },
                 perks: {
                     create: perks.map(perk => ({ perk: perk })), // Thêm các perks mới

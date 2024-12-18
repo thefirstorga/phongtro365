@@ -18,6 +18,11 @@ router.use(cookieParser())
 const bcryptSalt = bcrypt.genSaltSync(10)
 const jwtSecret = 'fhdjskahdfjkdsafhjdshakjhf'
 
+// nodemailer
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+require('dotenv').config();
+// tctv qrge iqvy rxiq
 
 router.get('/', async (req,res) => {
     const allUsers = await prisma.user.findMany()
@@ -111,6 +116,85 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         console.error('Error during login:', error);
         res.status(500).json({ error: 'Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.' });
+    }
+});
+
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Tìm người dùng theo email
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            return res.status(404).json({ error: 'Email không tồn tại trong hệ thống.' });
+        }
+
+        // Tạo token ngẫu nhiên và lưu vào DB
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 3600000); // Hết hạn sau 1 giờ
+
+        await prisma.user.update({
+            where: { email },
+            data: { resetToken, resetTokenExpiry },
+        });
+
+        // Gửi email
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: "hahahagxhh123@gmail.com",
+                pass: "tctvqrgeiqvyrxiq",
+            },
+        });
+
+        const frontUrl = process.env.FRONTEND_URL
+        const resetLink = `${frontUrl}/reset-password?token=${resetToken}`;
+        await transporter.sendMail({
+            to: email,
+            subject: "Password Reset Request",
+            html: `<p>Click the link below to reset your password:</p>
+                   <a href="${resetLink}">Reset Password</a>`,
+        });
+
+        res.json({ message: 'Bạn vui lòng check email để truy cập link đổi mật khẩu!' });
+    } catch (error) {
+        console.error("Error in forgot password:", error);
+        res.status(500).json({ error: "Đã xảy ra lỗi. Vui lòng thử lại." });
+    }
+});
+
+router.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    try {
+        // Tìm người dùng theo token
+        const user = await prisma.user.findFirst({
+            where: {
+                resetToken: token,
+                resetTokenExpiry: { gte: new Date() }, // Token chưa hết hạn
+            },
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: 'Token không hợp lệ hoặc đã hết hạn.' });
+        }
+
+        // Cập nhật mật khẩu
+        const hashedPassword = bcrypt.hashSync(newPassword, bcryptSalt);
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                resetToken: null,
+                resetTokenExpiry: null,
+            },
+        });
+
+        res.json({ message: 'Mật khẩu đã được cập nhật!' });
+    } catch (error) {
+        console.error("Error in reset password:", error);
+        res.status(500).json({ error: "Đã xảy ra lỗi. Vui lòng thử lại." });
     }
 });
 
@@ -271,7 +355,7 @@ router.get('/check-hide-account', async (req, res) => {
                 where: {
                     OR: [
                         { renterId: userId, status: 'APPROVED' }, // Người này đang thuê
-                        { place: { ownerId: userId }, status: 'APPROVED' }, // Người này là chủ trọ
+                        { place: { ownerId: userId }, status: { in: ['APPROVED', 'PENDING'] } }, // Người này là chủ trọ
                     ],
                 },
             });
@@ -279,7 +363,7 @@ router.get('/check-hide-account', async (req, res) => {
             if (pendingBookings) {
                 return res.json({
                     result: false,
-                    reason: 'Bạn đang có người thuê nên không thể ẩn tài khoản.',
+                    reason: 'Bạn đang có người thuê hoặc người chờ thuê nên không thể ẩn tài khoản.',
                 });
             }
 
@@ -326,7 +410,7 @@ router.get('/check-delete-account', async (req, res) => {
                 where: {
                     OR: [
                         { renterId: userId, status: 'APPROVED' }, // Người này đang thuê
-                        { place: { ownerId: userId }, status: 'APPROVED' }, // Người này là chủ trọ
+                        { place: { ownerId: userId }, status: { in: ['APPROVED', 'PENDING'] } }, // Người này là chủ trọ
                     ],
                 },
             });
@@ -480,15 +564,32 @@ router.post('/delete-account', async (req, res) => {
 
 router.get('/profile/:id', async (req, res) => {
     const { id } = req.params;
-  
+    const { token } = req.cookies;
+
     try {
-      const info = await prisma.user.findUnique({
+
+    let userId = null;
+
+        // Giải mã token để lấy userId
+    if (token) {
+        jwt.verify(token, jwtSecret, (err, userData) => {
+            if (err) {
+                console.error('Invalid JWT:', err);
+            } else {
+                userId = userData.id; // Lấy userId từ JWT
+            }
+        });
+    }
+
+    const info = await prisma.user.findUnique({
         where: { id: parseInt(id, 10) },
         select: {
+            id: true,
           name: true,
           avatar: true,
           phone: true,
           zalo: true,
+          status: true,
           createAt: true, 
           violationCount: true,
           places: {
@@ -502,6 +603,13 @@ router.get('/profile/:id', async (req, res) => {
       if (!info) {
         return res.status(404).json({ message: 'Không tìm thấy người dùng' });
       }
+
+      if (info.status !== 'ACTIVE') {
+        // Nếu userId (chủ nhà) trùng với ownerId của place, vẫn trả về Place
+        if (userId !== info.id) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        }
+    }
   
       res.json({ info });
     } catch (error) {
