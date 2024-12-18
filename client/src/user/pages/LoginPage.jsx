@@ -104,10 +104,15 @@ export default function LoginPage() {
 
           <button type="submit" className="primary">Login</button>
 
-          <div className="text-center py-2 text-gray-500">
-            Don't have an account yet?{" "}
+          <div className="text-center py-2 mt-2 text-gray-500">
+            <Link className="underline text-black" to={"/forgot-password"}>
+              Quên mật khẩu?
+            </Link>
+          </div>
+          <div className="text-center py-1 text-gray-500">
+            Bạn chưa có tài khoản?{" "}
             <Link className="underline text-black" to={"/register"}>
-              Register now
+              Đăng ký
             </Link>
           </div>
         </form>

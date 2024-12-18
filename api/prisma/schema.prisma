@@ -19,23 +19,25 @@ model Admin {
 }
 
 model User {
-  id             Int            @id @default(autoincrement())
-  name           String
-  email          String         @unique
-  password       String
-  avatar         String?
-  phone          String?
-  zalo           String?
-  createAt       DateTime       @default(now())
-  updateAt       DateTime       @updatedAt
-  places         Place[]        @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
-  bookings       Booking[]      @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
-  reports        Report[]       @relation("UserReports") // Các báo cáo do người dùng gửi
-  status         UserStatus     @default(ACTIVE) // Trạng thái người dùng
-  violationCount Int            @default(0) // Số lần vi phạm
-  comments       Comment[]      @relation("UserComments")
-  favourites     Favourite[]    @relation("UserFavs")
-  notifications  Notification[] @relation("UserNotis")
+  id               Int            @id @default(autoincrement())
+  name             String
+  email            String         @unique
+  password         String
+  avatar           String?
+  phone            String?
+  zalo             String?
+  createAt         DateTime       @default(now())
+  updateAt         DateTime       @updatedAt
+  places           Place[]        @relation("UserPlaces") // Khi xóa User, xóa Place liên quan
+  bookings         Booking[]      @relation("UserBookings") // Khi xóa User, xóa Booking liên quan
+  reports          Report[]       @relation("UserReports") // Các báo cáo do người dùng gửi
+  status           UserStatus     @default(ACTIVE) // Trạng thái người dùng
+  violationCount   Int            @default(0) // Số lần vi phạm
+  comments         Comment[]      @relation("UserComments")
+  favourites       Favourite[]    @relation("UserFavs")
+  notifications    Notification[] @relation("UserNotis")
+  resetToken       String? // Token để đặt lại mật khẩu (nullable)
+  resetTokenExpiry DateTime? // Thời gian hết hạn của token (nullable)
 }
 
 enum UserStatus {

@@ -3,3 +3,4 @@ uploads
 dist
 dist-ssr
 *.local
+prisma/migrations
