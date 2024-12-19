@@ -139,7 +139,7 @@ function Header() {
                       onClick={logout}
                       className="w-full text-left block px-4 py-2 text-red-500 hover:bg-gray-100"
                     >
-                      Logout
+                      Đăng xuất
                     </button>
                   </div>
                 )}
