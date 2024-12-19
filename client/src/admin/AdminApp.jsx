@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReportsPage from "./pages/ReportsPage";
 import UsersPage from "./pages/UsersPage";
+import ProtectedRouteLogin from "./components/ProtectedRouteLogin";
 
 axios.defaults.baseURL = "http://localhost:4000";
 axios.defaults.withCredentials = true;
@@ -23,7 +24,11 @@ function AdminApp() {
               <RegisterPage />
             </ProtectedRoute>
           } />
-          <Route path="login" element={<LoginPage />} />
+          <Route path="login" element={
+            <ProtectedRouteLogin>
+              <LoginPage />
+            </ProtectedRouteLogin>
+          } />
           <Route path="reports" element={
             <ProtectedRoute>
               <ReportsPage />

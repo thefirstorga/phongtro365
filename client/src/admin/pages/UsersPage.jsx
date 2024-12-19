@@ -68,13 +68,19 @@ function UsersPage() {
           {blacklistedUsers.map(user => (
             <div key={user.id} className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-all border-2 border-red-500">
               <div className="flex items-center space-x-4">
-                <img
-                  src={user.avatar ? BASE_URL + user.avatar : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'}
-                  alt={user.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
+                <a 
+                  href={`/profile/${user.id}`} target="_blank"
+                >
+                  <img
+                    src={user.avatar ? BASE_URL + user.avatar : 'https://banner2.cleanpng.com/20180411/ike/avfjoey57.webp'}
+                    alt={user.name}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                </a>
                 <div>
-                  <h3 className="text-xl font-semibold text-red-600">{user.name}</h3>
+                  <a href={`/profile/${user.id}`} target="_blank">
+                    <h3 className="text-xl font-semibold text-primary">{user.name}</h3>
+                  </a>
                   <p className="text-sm text-gray-500">{user.email}</p>
                   <p className="text-sm text-gray-500">{user.phone ? user.phone : 'Chưa cập nhật'}</p>
                 </div>

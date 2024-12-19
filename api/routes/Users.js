@@ -465,7 +465,6 @@ router.get('/check-delete-account', async (req, res) => {
     });
 });
 
-
 //hoặc dài dòng hơn:))), nhưng cách này thì sẽ giúp check chính xác là ai. Đó kiểu z
 // router.get('/check-delete-account', async (req, res) => {
 //     const { token } = req.cookies;

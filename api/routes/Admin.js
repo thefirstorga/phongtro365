@@ -42,54 +42,154 @@ router.get('/check-admin', async (req, res) => {
 
 })
 
-router.post('/register', async (req, res) => {
-    const {email, password} = req.body
-    const {tokenAdmin} = req.cookies
+// router.post('/register', async (req, res) => {
+//     const {email, password} = req.body
+//     const {tokenAdmin} = req.cookies
 
-    if(tokenAdmin!=='') {
-        jwt.verify(tokenAdmin, jwtSecret, {} , async (err, adminData) => {
-            if(err) throw err
+//     if(tokenAdmin!=='') {
+//         jwt.verify(tokenAdmin, jwtSecret, {} , async (err, adminData) => {
+//             if(err) throw err
+//             const existingAdmin = await prisma.admin.findUnique({
+//                 where: {
+//                     email: email, // Kiểm tra email đã tồn tại
+//                 },
+//             });
+            
+//             if (existingAdmin) {
+//                 return res.status(400).json({ error: 'Email đã tồn tại!' });
+//             }
+            
+//             const newAdmin = await prisma.admin.create({
+//                 data: {
+//                     email,
+//                     createById: adminData.id,
+//                     password: bcrypt.hashSync(password, bcryptSalt),
+//                 },
+//             });
+            
+//             return res.json(newAdmin);    
+//         })
+//     } else {
+//         await prisma.admin.create({
+//             data: {
+//                 email,
+//                 password: bcrypt.hashSync(password, bcryptSalt)
+//             }
+//         })
+//     }
+//     return res.json('not')
+// })
+
+router.post('/register', async (req, res) => {
+    const { email, password } = req.body;
+    const { tokenAdmin } = req.cookies;
+
+    try {
+        // Kiểm tra xem đã có admin nào chưa
+        const existingAdmins = await prisma.admin.findMany();
+
+        // Nếu chưa có admin, tạo admin đầu tiên
+        if (existingAdmins.length === 0) {
+            const hashedPassword = bcrypt.hashSync(password, bcryptSalt);
             const newAdmin = await prisma.admin.create({
                 data: {
                     email,
-                    createById: adminData.id,
-                    password: bcrypt.hashSync(password, bcryptSalt)
-                }
-            })
-            res.json(newAdmin)
-        })
-    } else {
-        await prisma.admin.create({
-            data: {
-                email,
-                password: bcrypt.hashSync(password, bcryptSalt)
+                    password: hashedPassword,
+                },
+            });
+            return res.status(201).json({ message: 'Admin đầu tiên đã được tạo!', admin: newAdmin });
+        }
+
+        // Nếu đã có admin, kiểm tra token
+        if (!tokenAdmin) {
+            return res.status(401).json({ error: 'Không có quyền tạo admin mới. Vui lòng đăng nhập.' });
+        }
+
+        jwt.verify(tokenAdmin, jwtSecret, async (err, adminData) => {
+            if (err) {
+                return res.status(403).json({ error: 'Token không hợp lệ.' });
             }
-        })
+
+            // Kiểm tra email đã tồn tại
+            const existingAdmin = await prisma.admin.findUnique({
+                where: { email },
+            });
+
+            if (existingAdmin) {
+                return res.status(400).json({ error: 'Email đã tồn tại!' });
+            }
+
+            // Tạo admin mới
+            const hashedPassword = bcrypt.hashSync(password, bcryptSalt);
+            const newAdmin = await prisma.admin.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    createById: adminData.id, // Ghi nhận admin nào đã tạo
+                },
+            });
+
+            return res.status(201).json({ message: 'Admin mới đã được tạo!', admin: newAdmin });
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
     }
-    
-    res.json('not')
-    
-})
+});
+
+// router.post('/login', async (req, res) => {
+//     const {email, password} = req.body
+//     const adminDoc = await prisma.admin.findUnique({
+//         where: {email: email}
+//     })
+//     if(adminDoc) {
+//         const passOk = bcrypt.compareSync(password, adminDoc.password)
+//         if(passOk) {
+//             jwt.sign({email:adminDoc.email, id:adminDoc.id}, jwtSecret, {}, (err, tokenAdmin) => {
+//                 if(err) throw err
+//                 res.cookie('tokenAdmin', tokenAdmin).json(adminDoc)
+//             })
+//         } else {
+//             res.status(422).json('pass not ok')
+//         }
+//     } else {
+//         res.json('not found')
+//     }
+// })
 
 router.post('/login', async (req, res) => {
-    const {email, password} = req.body
-    const adminDoc = await prisma.admin.findUnique({
-        where: {email: email}
-    })
-    if(adminDoc) {
-        const passOk = bcrypt.compareSync(password, adminDoc.password)
-        if(passOk) {
-            jwt.sign({email:adminDoc.email, id:adminDoc.id}, jwtSecret, {}, (err, tokenAdmin) => {
-                if(err) throw err
-                res.cookie('tokenAdmin', tokenAdmin).json(adminDoc)
-            })
-        } else {
-            res.status(422).json('pass not ok')
+    const { email, password } = req.body;
+
+    try {
+        const adminDoc = await prisma.admin.findUnique({
+            where: { email }
+        });
+
+        if (!adminDoc) {
+            return res.status(404).json({ error: 'Admin không tồn tại' });
         }
-    } else {
-        res.json('not found')
+
+        const passOk = bcrypt.compareSync(password, adminDoc.password);
+        if (!passOk) {
+            return res.status(422).json({ error: 'Mật khẩu không đúng' });
+        }
+
+        jwt.sign(
+            { email: adminDoc.email, id: adminDoc.id },
+            jwtSecret,
+            {},
+            (err, tokenAdmin) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Đã xảy ra lỗi khi tạo token' });
+                }
+                res.cookie('tokenAdmin', tokenAdmin).json(adminDoc);
+            }
+        );
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý' });
     }
-})
+});
 
 router.post('/logout', (req, res) => {
     res.cookie('tokenAdmin', '').json(true)
@@ -138,7 +238,6 @@ router.get('/profile', async (req, res) => {
     }
 });
 
-
 router.get('/get-places', async (req, res) => {
     try {
         const places = await prisma.place.findMany({
@@ -177,7 +276,6 @@ router.get('/get-places', async (req, res) => {
         res.status(500).json({ message: 'Có lỗi xảy ra khi lấy danh sách places.' });
     }
 });
-
 
 // Đổi trạng thái của Place thành DELETE và chuyển trạng thái các Report liên quan sang DONE
 router.post('/delete-place/:placeId', async (req, res) => {
@@ -290,6 +388,5 @@ router.post('/mark-place-normal/:placeId', async (req, res) => {
         res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu.' });
     }
 });
-
 
 module.exports = router

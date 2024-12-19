@@ -37,31 +37,68 @@ const createNotification = async (userId, type, message, placeId = null) => {
 };
 
 router.post('/upload-by-link', async (req, res) => {
-    const {link} = req.body
-    const newName = 'photo' + Date.now() + '.jpg'
-    await imageDownloader.image({
-        url: link,
-        dest: parPath + '\\uploads\\' + newName
-    })
-    res.json(newName)
-})
+    const { link } = req.body;
+
+    try {
+        // Tạo tên file mới
+        const newName = 'photo' + Date.now() + '.jpg';
+
+        // Tạo đường dẫn file một cách an toàn
+        const destination = path.join(parPath, 'uploads', newName);
+
+        // Tải hình ảnh từ link
+        await imageDownloader.image({
+            url: link,
+            dest: destination
+        });
+
+        // Phản hồi thành công với tên file
+        res.json(newName);
+    } catch (error) {
+        console.error('Error downloading image:', error.message);
+
+        // Trả về lỗi với thông báo cụ thể
+        res.status(500).json({
+            success: false,
+            message: 'Failed to download the image. Please check the link and try again.',
+            error: error.message
+        });
+    }
+});
 
 // const photosMiddleware = multer({dest: path.join(parPath, 'uploads/')})
 const photosMiddleware = multer({dest: 'uploads/'}) // đoạn này chỉ như này thôi
 router.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
-    const uploadedFiles = []
-    for(let i = 0; i < req.files.length; i++) {
-        const {path, originalname} = req.files[i] // lấy ra trg path và originalname trong response
-        const parts = originalname.split('.')
-        const ext = parts[parts.length - 1] 
-        const newPath = path + '.' + ext
-        fs.renameSync(path, newPath)
-        uploadedFiles.push(newPath.replace('uploads\\', ''))
-    }
-    res.json(uploadedFiles)
-})
+    const uploadedFiles = [];
 
-//hàm bổ sung để xóa các ảnh thừa trong folder upload
+    try {
+        // Lặp qua tất cả các file đã upload
+        for (let i = 0; i < req.files.length; i++) {
+            const { path: tempPath, originalname } = req.files[i]; // Lấy đường dẫn tạm và tên gốc
+            const fileExt = path.extname(originalname); // Lấy đuôi file (vd: .jpg, .png)
+            const newPath = tempPath + fileExt; // Thêm đuôi file vào đường dẫn mới
+
+            // Đổi tên file (chuyển từ đường dẫn tạm sang đường dẫn mới)
+            fs.renameSync(tempPath, newPath);
+
+            // Lưu đường dẫn file (bỏ tiền tố 'uploads\\' để trả về đường dẫn đơn giản hơn)
+            uploadedFiles.push(newPath.replace(path.join('uploads', ''), '').replace(/\\/g, '/'));
+        }
+
+        // Trả về danh sách file đã upload
+        res.json(uploadedFiles);
+    } catch (error) {
+        console.error('Error during file upload:', error.message);
+
+        // Trả về lỗi nếu quá trình xử lý xảy ra vấn đề
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while processing the uploaded files.',
+            error: error.message,
+        });
+    }
+});
+
 async function cleanUnusedPhotos() {
     try {
         const photosPost = await prisma.placePhoto.findMany({
@@ -107,37 +144,84 @@ async function cleanUnusedPhotos() {
     }
 }
 
-router.post('/places', (req, res) => {
-    const {token} = req.cookies
+router.post('/places', async (req, res) => {
+    const { token } = req.cookies;
     const {
         title, address, latitude, longitude,
-        addedPhotos, 
-        description, perks, extraInfo, 
+        addedPhotos,
+        description, perks, extraInfo,
         area, duration, price
-    } = req.body
-    jwt.verify(token, jwtSecret, {} , async (err, userData) => {
-        if(err) throw err
-        const placeData = await prisma.place.create({
-            data: {
-                owner: {
-                    connect: { id: userData.id } // Thay thế bằng id của User thực tế
-                },
-                title, address, latitude, longitude,
-                description, extraInfo, 
-                area, duration, price,
-                photos: {
-                    create: addedPhotos.map(photo => ({ url: photo })), // Tạo các bản ghi PlacePhoto
-                },
-                perks: {
-                    create: perks.map(perk => ({ perk: perk })), // Tạo các bản ghi PlacePerk
-                },
+    } = req.body;
+
+    try {
+        // Kiểm tra token có tồn tại hay không
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Authentication token is missing.' });
+        }
+
+        // Xác thực token
+        jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+            if (err) {
+                console.error('JWT Verification Error:', err.message);
+                return res.status(403).json({ success: false, message: 'Invalid token.' });
             }
-        })
-        res.json(placeData)
-        // res.json(userData)
-        cleanUnusedPhotos()
-    })
-})
+
+            // Kiểm tra dữ liệu cần thiết
+            if (!title || !address || !addedPhotos || !area || !duration || !price) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Missing required fields. Please provide all necessary information.' 
+                });
+            }
+
+            // Tạo dữ liệu place
+            try {
+                const placeData = await prisma.place.create({
+                    data: {
+                        owner: {
+                            connect: { id: userData.id }, // Kết nối với User theo id
+                        },
+                        title,
+                        address,
+                        latitude,
+                        longitude,
+                        description,
+                        extraInfo,
+                        area: parseInt(area),
+                        duration: parseInt(duration),
+                        price: parseFloat(price),
+                        photos: {
+                            create: addedPhotos.map(photo => ({ url: photo })), // Tạo các bản ghi PlacePhoto
+                        },
+                        perks: {
+                            create: perks.map(perk => ({ perk: perk })), // Tạo các bản ghi PlacePerk
+                        },
+                    },
+                });
+
+                // Phản hồi thành công
+                res.json(placeData);
+
+                // Xóa các ảnh không sử dụng
+                cleanUnusedPhotos();
+            } catch (dbError) {
+                console.error('Database Error:', dbError.message);
+                res.status(500).json({ 
+                    success: false, 
+                    message: 'Failed to create place. Please try again later.', 
+                    error: dbError.message 
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Unexpected Error:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'An unexpected error occurred. Please try again later.',
+            error: error.message,
+        });
+    }
+});
 
 router.get('/user-places', async (req, res) => {
     const { token } = req.cookies;
@@ -181,71 +265,6 @@ router.get('/user-places', async (req, res) => {
         res.status(500).json({ error: 'Something went wrong, please try again later' });
     }
 });
-
-
-
-// hàm này cực kỳ quan trọng nha, thay thế cho hàm ở trên
-// router.get('/user-places', (req, res) => {
-//     // const { token } = req.cookies;
-//     const {token} = req.body
-//     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-//         if (err) return res.status(403).json({ error: 'Invalid token' });
-//         const { id } = userData;
-
-//         try {
-//             // Nhà đang chờ duyệt (có ít nhất một booking PENDING)
-//             const pendingPlaces = await prisma.place.findMany({
-//                 where: {
-//                     ownerId: id,
-//                     bookings: {
-//                         some: {
-//                             status: 'PENDING'
-//                         }
-//                     }
-//                 },
-//                 include: {
-//                     photos: true,
-//                     bookings: {
-//                         select: {
-//                             id: true,
-//                             status: true
-//                         }
-//                     }
-//                 }
-//             });
-
-//             // Nhà đã thuê (có ít nhất một booking APPROVED)
-//             const approvedPlaces = await prisma.place.findMany({
-//                 where: {
-//                     ownerId: id,
-//                     bookings: {
-//                         some: {
-//                             status: 'APPROVED'
-//                         }
-//                     }
-//                 },
-//                 include: {
-//                     photos: true,
-//                     bookings: {
-//                         select: {
-//                             id: true,
-//                             status: true
-//                         }
-//                     }
-//                 }
-//             });
-
-//             res.json({
-//                 pendingPlaces,
-//                 approvedPlaces
-//             });
-//         } catch (error) {
-//             console.error("Error fetching user places:", error);
-//             res.status(500).json({ error: 'Something went wrong while fetching places.' });
-//         }
-//     });
-// });
-
 
 router.get('/place/:id', async (req, res) => {
     const { id } = req.params;
@@ -331,44 +350,74 @@ router.get('/place/:id', async (req, res) => {
 // nó sẽ liệt kê ra các lượt book để chờ duyệt
 router.get('/placedetail/:id', async (req, res) => {
     const { id } = req.params;
-    const place = await prisma.place.findUnique({
-      where: { id: parseInt(id, 10) },
-      include: { 
-        photos: true, 
-        perks: true, 
-        bookings: {
+
+    try {
+        // Kiểm tra id có hợp lệ không
+        if (!id || isNaN(parseInt(id, 10))) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid place ID. Please provide a valid numeric ID.' 
+            });
+        }
+
+        // Truy vấn dữ liệu từ cơ sở dữ liệu
+        const place = await prisma.place.findUnique({
+            where: { id: parseInt(id, 10) },
             include: {
-                comments: true,
-                invoices: true,
-                renter: {
-                        select: {
-                            id: true,
-                            name: true,
-                            avatar: true,
-                            phone: true,
-                            zalo: true,
+                photos: true,
+                perks: true,
+                bookings: {
+                    include: {
+                        comments: true,
+                        invoices: true,
+                        renter: {
+                            select: {
+                                id: true,
+                                name: true,
+                                avatar: true,
+                                phone: true,
+                                zalo: true,
+                            },
                         },
-                }
-            }
-        },
-        reports: { // Bao gồm thông tin đầy đủ của người báo cáo
-            include: {
-                reporter: { // Lấy thông tin người báo cáo
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        avatar: true,
-                        phone: true,
-                        zalo: true,
+                    },
+                },
+                reports: {
+                    include: {
+                        reporter: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                avatar: true,
+                                phone: true,
+                                zalo: true,
+                            },
+                        },
                     },
                 },
             },
-        },
+        });
+
+        // Kiểm tra nếu không tìm thấy place
+        if (!place) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Place not found. Please check the ID and try again.' 
+            });
+        }
+
+        // Trả về dữ liệu nếu thành công
+        res.json({ place });
+    } catch (error) {
+        console.error('Error fetching place details:', error.message);
+
+        // Trả về lỗi nếu xảy ra vấn đề không mong đợi
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while fetching place details. Please try again later.',
+            error: error.message,
+        });
     }
-    });
-  
-    res.json({ place });
 });
 
 router.put('/places/:id', async (req, res) => {
@@ -536,34 +585,6 @@ router.put('/hidden-home/:placeId', async (req, res) => {
         res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu.' });
     }
 });
-
-// router.post('/add-report', async (req, res) => {
-//     const {token} = req.cookies
-//     const {reason, placeId} = req.body
-
-//     jwt.verify(token, jwtSecret, async (err, userData) => {
-//         if (err) {
-//             return res.status(401).json({ message: 'Token không hợp lệ.' });
-//         }
-
-//         const userId = userData.id;
-
-//         try {
-//             // Tạo report
-//             await prisma.report.create({
-//                 data: {
-//                     reporterId: userId,
-//                     reason: reason,
-//                     placeId: parseInt(placeId, 10)
-//                 }
-//             });
-//             return res.status(200).json({ message: 'Report đã được gửi cho admin' });
-//         } catch (error) {
-//             console.error(error);
-//             return res.status(500).json({ message: 'Có lỗi xảy ra khi xóa tài khoản.' });
-//         }
-//     });
-// })
 
 router.post('/add-report', async (req, res) => {
     const { token } = req.cookies;
@@ -825,7 +846,6 @@ router.get('/favourites', async (req, res) => {
 // API: Lấy thông báo của người dùng
 router.get('/notifications', async (req, res) => {
     const { token } = req.cookies;
-    // const { token } = req.body;
   
     jwt.verify(token, jwtSecret, async (err, userData) => {
       if (err) {
@@ -893,6 +913,5 @@ router.post('/mark-as-read', async (req, res) => {
       }
     });
 });
-  
 
 module.exports = router;
