@@ -420,7 +420,6 @@ router.get('/placedetail/:id', async (req, res) => {
     }
 });
 
-
 router.put('/places/:id', async (req, res) => {
     const { id } = req.params;
     const {

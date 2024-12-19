@@ -31,23 +31,6 @@ const createNotification = async (userId, type, message, placeId = null) => {
     }
 };
 
-// router.post('/', async (req, res) => {
-//     const {token} = req.cookies
-//     let renterId = null
-//     jwt.verify(token, jwtSecret, {}, (err, userData) => {
-//         if(err) throw err
-//         renterId = userData.id
-//     })
-//     const {placeId} = req.body
-
-//     const newBooking = await prisma.booking.create({
-//         data: {
-//             placeId, renterId,
-//         }
-//     })
-//     res.json(newBooking)
-// })
-
 router.post('/', async (req, res) => {
     const { token } = req.cookies;
     let renterId = null;
@@ -156,56 +139,6 @@ router.get('/', (req, res) => {
     })
 })
 
-// router.post('/accept', async (req, res) => {
-//     const { token } = req.cookies;
-//     const { bookingId, placeId } = req.body;
-
-//     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-//         if (err) return res.status(403).json({ error: 'Invalid token' });
-
-//         try {
-//             // Bước 1: Lấy `duration` của hợp đồng từ `Place`
-//             const place = await prisma.place.findUnique({
-//                 where: { id: parseInt(placeId,10) },
-//                 select: { duration: true }
-//             });
-
-//             if (!place) {
-//                 return res.status(404).json({ error: 'Place not found' });
-//             }
-
-//             // Tính `checkOut` dựa trên `duration`
-//             const checkOutDate = addMonths(new Date(), place.duration);
-
-//             // Bước 2: Đổi trạng thái của `booking` được chọn thành `APPROVED` và cập nhật `checkOut`
-//             await prisma.booking.update({
-//                 where: { id: bookingId },
-//                 data: {
-//                     status: 'APPROVED',
-//                     checkOut: checkOutDate
-//                 }
-//             })
-
-//             // Bước 3: Xóa các booking có `status` là `PENDING` cùng `placeId`
-//             await prisma.booking.updateMany({
-//                 where: {
-//                     placeId: parseInt(placeId,10),
-//                     status: 'PENDING'
-//                 },
-//                 data: {
-//                     status: 'REJECTED'
-//                 }
-//             })
-
-//             res.json({ message: 'Booking has been approved, checkOut date set, and other pending bookings are removed.' });
-//         } catch (error) {
-//             console.error("Error approving booking:", error);
-//             res.status(500).json({ error: 'Something went wrong while approving booking.' });
-//         }
-
-//     });
-// });
-
 router.post('/accept', async (req, res) => {
     const { token } = req.cookies;
     const { bookingId, placeId } = req.body;
@@ -288,23 +221,6 @@ router.post('/accept', async (req, res) => {
     });
 });
 
-// router.post('/delete-all-booking', async (req, res) => {
-//     const { token } = req.cookies;
-//     const { id } = req.body;
-//     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-//         if (err) return res.status(403).json({ error: 'Invalid token' });
-//         await prisma.booking.updateMany({
-//             where: {
-//                 placeId: id,
-//                 status: 'PENDING'
-//             },
-//             data: {
-//                 status: 'REJECTED'
-//             }
-//         })
-//     })
-// })
-
 // đcm đoạn này siêu lạ, không hiểu sao luôn ạ......??????
 // cái id nó là undefined???
 router.post('/delete-all-booking', async (req, res) => {
@@ -356,23 +272,6 @@ router.post('/delete-all-booking', async (req, res) => {
     });
 });
 
-
-// router.post('/invoice', async (req, res) => {
-//     const {
-//         bookingId, title, description, addedPhotos
-//     } = req.body
-//     const newInvoice = await prisma.invoice.create({
-//         data: {
-//             booking: {connect: {id: bookingId}},
-//             title, description,
-//             photos: {
-//                 create: addedPhotos.map(photo => ({ url: photo })), // Tạo các bản ghi PlacePhoto
-//             }
-//         }
-//     })
-//     res.json(newInvoice)
-// })
-
 router.post('/invoice', async (req, res) => {
     const { bookingId, title, description, addedPhotos } = req.body;
 
@@ -415,7 +314,6 @@ router.post('/invoice', async (req, res) => {
         res.status(500).json({ error: 'Something went wrong while creating invoice.' });
     }
 });
-
 
 router.get('/getinvoices/:id', async (req,res) => {
     const { id } = req.params;
@@ -489,17 +387,6 @@ router.put('/not-continue-rent', async (req, res) => {
     res.json({ message: 'Booking updated successfully', updatedBooking });
 })
 
-// router.put('/not-rent-request', async (req, res) => {
-//     const {bookingId} = req.body
-//     const result = await prisma.booking.update({
-//         where: { id: bookingId },
-//         data: {
-//             status: 'WAIT'
-//         }
-//     })
-//     res.json(result)
-// })
-
 router.put('/not-rent-request', async (req, res) => {
     const { bookingId } = req.body;
 
@@ -551,18 +438,6 @@ router.put('/undo-not-rent-request', async (req, res) => {
     })
     res.json(result)
 })
-
-// router.put('/not-rent-response', async (req, res) => {
-//     const {bookingId} = req.body
-//     const result = await prisma.booking.update({
-//         where: { id: bookingId },
-//         data: {
-//             status: 'RENTED',
-//             checkOut: new Date()
-//         }
-//     })
-//     res.json(result)
-// })
 
 router.put('/not-rent-response', async (req, res) => {
     const { bookingId } = req.body;
