@@ -1,0 +1,182 @@
+Enum "booking_status_enum" {
+  "PENDING"
+  "APPROVED"
+  "REJECTED"
+  "WAIT"
+  "RENTED"
+}
+
+Enum "place_status_enum" {
+  "SEE"
+  "HIDDEN"
+  "DELETE"
+}
+
+Enum "report_status_enum" {
+  "PENDING"
+  "DONE"
+}
+
+Enum "user_status_enum" {
+  "ACTIVE"
+  "BLACKLISTED"
+  "DEACTIVATED"
+}
+
+Table "admin" {
+  "id" int [pk, not null, increment]
+  "email" varchar(191) [unique, not null]
+  "password" varchar(191) [not null]
+  "createById" int
+  "createAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updateAt" datetime(3) [not null]
+}
+
+Table "booking" {
+  "id" int [pk, not null, increment]
+  "placeId" int [not null]
+  "renterId" int [not null]
+  "checkOut" datetime(3)
+  "status" booking_status_enum [not null, default: 'PENDING']
+  "isContinue" tinyint(1) [not null, default: 0]
+  "createAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updateAt" datetime(3) [not null]
+}
+
+Table "comment" {
+  "id" int [pk, not null, increment]
+  "content" varchar(191) [not null]
+  "createdAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updatedAt" datetime(3) [not null]
+  "userId" int [not null]
+  "bookingId" int [unique, not null]
+}
+
+Table "favourite" {
+  "id" int [pk, not null, increment]
+  "userId" int [not null]
+  "placeId" int [not null]
+  "createdAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updatedAt" datetime(3) [not null]
+
+  Indexes {
+    (userId, placeId) [unique, name: "Favourite_userId_placeId_key"]
+  }
+}
+
+Table "invoice" {
+  "id" int [pk, not null, increment]
+  "bookingId" int [not null]
+  "title" varchar(191) [not null]
+  "description" varchar(191)
+  "createdAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updateAt" datetime(3) [not null]
+}
+
+Table "invoicephoto" {
+  "id" int [pk, not null, increment]
+  "url" varchar(191) [not null]
+  "invoiceId" int [not null]
+}
+
+Table "notification" {
+  "id" int [pk, not null, increment]
+  "userId" int [not null]
+  "type" varchar(191) [not null]
+  "message" varchar(191) [not null]
+  "read" tinyint(1) [not null, default: 0]
+  "createdAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updatedAt" datetime(3) [not null]
+  "placeId" int
+
+  Indexes {
+    (userId, type, createdAt) [unique, name: "Notification_userId_type_createdAt_key"]
+  }
+}
+
+Table "place" {
+  "id" int [pk, not null, increment]
+  "ownerId" int [not null]
+  "title" varchar(191) [not null]
+  "address" varchar(191) [not null]
+  "latitude" decimal(65,30)
+  "longitude" decimal(65,30)
+  "area" int [not null]
+  "description" varchar(191) [not null]
+  "extraInfo" varchar(191) [not null]
+  "duration" int [not null]
+  "price" double [not null]
+  "status" place_status_enum [not null, default: 'SEE']
+  "createAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updateAt" datetime(3) [not null]
+}
+
+Table "placeperk" {
+  "id" varchar(191) [pk, not null]
+  "perk" varchar(191) [not null]
+  "placeId" int [not null]
+}
+
+Table "placephoto" {
+  "id" int [pk, not null, increment]
+  "url" varchar(191) [not null]
+  "placeId" int [not null]
+}
+
+Table "report" {
+  "id" int [pk, not null, increment]
+  "reporterId" int [not null]
+  "placeId" int [not null]
+  "reason" varchar(191) [not null]
+  "status" report_status_enum [not null, default: 'PENDING']
+  "createdAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updatedAt" datetime(3) [not null]
+}
+
+Table "user" {
+  "id" int [pk, not null, increment]
+  "name" varchar(191) [not null]
+  "email" varchar(191) [unique, not null]
+  "password" varchar(191) [not null]
+  "avatar" varchar(191)
+  "phone" varchar(191)
+  "zalo" varchar(191)
+  "createAt" datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  "updateAt" datetime(3) [not null]
+  "status" user_status_enum [not null, default: 'ACTIVE']
+  "violationCount" int [not null, default: 0]
+  "resetToken" varchar(191)
+  "resetTokenExpiry" datetime(3)
+}
+
+Ref "Admin_createById_fkey":"admin"."id" < "admin"."createById" [update: cascade, delete: set null]
+
+Ref "Booking_placeId_fkey":"place"."id" < "booking"."placeId" [update: cascade, delete: cascade]
+
+Ref "Booking_renterId_fkey":"user"."id" < "booking"."renterId" [update: cascade, delete: cascade]
+
+Ref "Comment_bookingId_fkey":"booking"."id" < "comment"."bookingId" [update: cascade, delete: cascade]
+
+Ref "Comment_userId_fkey":"user"."id" < "comment"."userId" [update: cascade, delete: cascade]
+
+Ref "Favourite_placeId_fkey":"place"."id" < "favourite"."placeId" [update: cascade, delete: cascade]
+
+Ref "Favourite_userId_fkey":"user"."id" < "favourite"."userId" [update: cascade, delete: cascade]
+
+Ref "Invoice_bookingId_fkey":"booking"."id" < "invoice"."bookingId" [update: cascade, delete: cascade]
+
+Ref "InvoicePhoto_invoiceId_fkey":"invoice"."id" < "invoicephoto"."invoiceId" [update: cascade, delete: cascade]
+
+Ref "Notification_placeId_fkey":"place"."id" < "notification"."placeId" [update: cascade, delete: cascade]
+
+Ref "Notification_userId_fkey":"user"."id" < "notification"."userId" [update: cascade, delete: cascade]
+
+Ref "Place_ownerId_fkey":"user"."id" < "place"."ownerId" [update: cascade, delete: cascade]
+
+Ref "PlacePerk_placeId_fkey":"place"."id" < "placeperk"."placeId" [update: cascade, delete: cascade]
+
+Ref "PlacePhoto_placeId_fkey":"place"."id" < "placephoto"."placeId" [update: cascade, delete: cascade]
+
+Ref "Report_placeId_fkey":"place"."id" < "report"."placeId" [update: cascade, delete: cascade]
+
+Ref "Report_reporterId_fkey":"user"."id" < "report"."reporterId" [update: cascade, delete: cascade]

@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express()
 const cron = require('node-cron');
+const path = require('path');
 const updateExpiredBookings = require('./routes/updateExpiredBookings');
 
 const cors = require('cors')
@@ -30,6 +31,12 @@ cron.schedule('*/1 * * * *', async () => {
     console.log('cron job:');
     await updateExpiredBookings();
 });
+
+// app.use(express.static(path.join(__dirname, 'dist')));
+
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// });
 
 app.listen(4000, () => {
     console.log("Server running on port 4000");
