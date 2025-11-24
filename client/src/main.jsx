@@ -6,9 +6,9 @@ import { BrowserRouter } from 'react-router-dom'
 import AdminApp from './admin/AdminApp.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <BrowserRouter>
       {window.location.pathname.startsWith('/admin') ? <AdminApp /> : <App />}
     </BrowserRouter>
-  </StrictMode>,
+  // </StrictMode>,
 )

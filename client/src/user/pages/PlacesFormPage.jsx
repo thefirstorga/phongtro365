@@ -124,6 +124,7 @@ function PlacesFormPage() {
         if (id) {
             await axios.put('/post/places/' + id, { id, ...placeData });
         } else {
+            console.log(placeData);
             await axios.post('/post/places', placeData);
         }
         setRedirect(true);
