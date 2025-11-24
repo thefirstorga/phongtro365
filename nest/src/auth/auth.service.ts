@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SigninDto, SignupDto } from './dto';
 import * as argon from 'argon2';
-import { Prisma } from 'generated/prisma';
+import { Prisma, User } from 'generated/prisma';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
@@ -60,6 +60,8 @@ export class AuthService {
       throw new ForbiddenException('Tài khoản đã bị khóa vĩnh viễn.');
     }
 
+    if (!user.password) throw new ForbiddenException('Lỗi đăng nhập.');
+
     const pwMatches = await argon.verify(user.password, dto.password);
     if (!pwMatches) {
       throw new ForbiddenException('Mật khẩu không đúng.');
@@ -93,5 +95,45 @@ export class AuthService {
     });
 
     return token;
+  }
+
+  async signInGoogleAuth({ providerId, email, name, picture }: any) {
+    const existUser = await this.prisma.user.findUnique({
+      where: { email: email },
+    });
+
+    if (!existUser) {
+      const newUser = await this.prisma.user.create({
+        data: {
+          name: name,
+          email: email,
+          avatar: picture,
+        },
+      });
+      const token = await this.signToken(newUser.id, newUser.email);
+      return {
+        message: 'Đăng nhập thành công.',
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          status: newUser.status,
+        },
+        token,
+      };
+    }
+
+    const token = await this.signToken(existUser.id, existUser.email);
+
+    return {
+      message: 'Đăng nhập thành công.',
+      user: {
+        id: existUser.id,
+        name: existUser.name,
+        email: existUser.email,
+        status: existUser.status,
+      },
+      token,
+    };
   }
 }

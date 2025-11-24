@@ -50,7 +50,7 @@ function ProfilePage() {
   }
 
   const saveAvatar = () => {
-    axios.put('/auth/change-avatar', {id: user.id, updatedAvatar})
+    axios.put('/users/change-avatar', {id: user.id, updatedAvatar})
     setShowAvatarPopup(false);
     window.location.reload()
   };
@@ -81,7 +81,7 @@ function ProfilePage() {
   const saveInfo = async () => {
     try {
       const response = await axios.post(
-        '/auth/update-profile',
+        '/users/update-profile',
         {
           name: updatedInfo.name,
           phone: updatedInfo.phone,

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateProfileDto } from './dto';
 
 @Injectable()
 export class UserService {
@@ -21,5 +22,17 @@ export class UserService {
     });
 
     return user; // Nest tự serialize JSON
+  }
+
+  updateProfile(userId: number, updateProfile: UpdateProfileDto) {
+    const { name, phone, zalo } = updateProfile;
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        phone,
+        zalo,
+      },
+    });
   }
 }
