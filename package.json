@@ -5,7 +5,7 @@
     "install:api": "cd api && npm install",
     "install:client": "cd client && npm install",
     "postinstall": "npm run install:api && npm run install:client",
-    "build": "cd api && npm run build && cd ../client && npm run build",
+    "build": "cd api && npm run build && cd ../client && npm install --include=optional && npm run build",
     "start": "cd api && npm start"
   }
 }
