@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "nodemon index.js",
-    "build": "npx prisma generate",
+    "build": "npx prisma generate && npx prisma db push",
     "start": "node index.js"
   },
   "dependencies": {
