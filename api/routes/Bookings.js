@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+require('dotenv').config();
 
 // db, dùng trong mọi trang
 const {PrismaClient} = require('@prisma/client')
@@ -8,7 +9,7 @@ const prisma = new PrismaClient()
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 router.use(cookieParser())
-const jwtSecret = 'fhdjskahdfjkdsafhjdshakjhf'
+const jwtSecret = process.env.JWT_SECRET || 'fhdjskahdfjkdsafhjdshakjhf'
 
 const { addMonths } = require('date-fns');
 

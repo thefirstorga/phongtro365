@@ -17,7 +17,7 @@ import FavouritePage from './pages/FavouritePage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
-axios.defaults.baseURL = 'http://localhost:4000';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
 axios.defaults.withCredentials = true;
 
 function App() {

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+require('dotenv').config();
 
 // db, dùng trong mọi trang
 const {PrismaClient} = require('@prisma/client')
@@ -10,7 +11,7 @@ const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 router.use(cookieParser())
 const bcryptSalt = bcrypt.genSaltSync(10)
-const jwtSecret = 'fhdjskahdfjkdsafhjdshakjhf'
+const jwtSecret = process.env.JWT_SECRET || 'fhdjskahdfjkdsafhjdshakjhf'
 
 const createNotification = async (userId, type, message, placeId = null) => {
     let parsedPlaceId

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+require('dotenv').config();
 
 // db, dùng trong mọi trang
 const {PrismaClient} = require('@prisma/client')
@@ -9,17 +10,22 @@ const imageDownloader = require('image-downloader')
 const multer = require('multer')
 const fs = require('fs')
 
-// lưu ý đoạn path này nha
 const path = require('path')
 const parPath = path.join(__dirname, '..')
-router.use('/uploads', express.static(path.join(parPath, 'uploads')))
+// Thư mục uploads: dùng Railway Volume nếu có, không thì dùng local
+const uploadsDir = process.env.UPLOADS_DIR || path.join(parPath, 'uploads')
+// Đảm bảo thư mục tồn tại
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+router.use('/uploads', express.static(uploadsDir))
 
 const bcrypt = require('bcryptjs')
 const bcryptSalt = bcrypt.genSaltSync(10)
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 router.use(cookieParser())
-const jwtSecret = 'fhdjskahdfjkdsafhjdshakjhf'
+const jwtSecret = process.env.JWT_SECRET || 'fhdjskahdfjkdsafhjdshakjhf'
 
 const createNotification = async (userId, type, message, placeId = null) => {
     try {
@@ -44,7 +50,7 @@ router.post('/upload-by-link', async (req, res) => {
         const newName = 'photo' + Date.now() + '.jpg';
 
         // Tạo đường dẫn file một cách an toàn
-        const destination = path.join(parPath, 'uploads', newName);
+        const destination = path.join(uploadsDir, newName);
 
         // Tải hình ảnh từ link
         await imageDownloader.image({
@@ -66,8 +72,7 @@ router.post('/upload-by-link', async (req, res) => {
     }
 });
 
-// const photosMiddleware = multer({dest: path.join(parPath, 'uploads/')})
-const photosMiddleware = multer({dest: 'uploads/'}) // đoạn này chỉ như này thôi
+const photosMiddleware = multer({dest: uploadsDir})
 router.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
     const uploadedFiles = [];
 
@@ -81,8 +86,8 @@ router.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
             // Đổi tên file (chuyển từ đường dẫn tạm sang đường dẫn mới)
             fs.renameSync(tempPath, newPath);
 
-            // Lưu đường dẫn file (bỏ tiền tố 'uploads\\' để trả về đường dẫn đơn giản hơn)
-            uploadedFiles.push(newPath.replace(path.join('uploads', ''), '').replace(/\\/g, '/'));
+            // Chỉ trả về tên file (không kèm đường dẫn thư mục)
+            uploadedFiles.push(path.basename(newPath));
         }
 
         // Trả về danh sách file đã upload
@@ -122,7 +127,7 @@ async function cleanUnusedPhotos() {
                 .map(photo => path.basename(photo.avatar)) // Tên file từ user.avatar
         ];
 
-        const uploadsFolder = path.join(parPath, 'uploads');
+        const uploadsFolder = uploadsDir;
         // Tạo một danh sách các file ảnh hiện có trong thư mục uploads
         const filesInFolder = fs.readdirSync(uploadsFolder);
 

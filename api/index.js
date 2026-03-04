@@ -1,13 +1,16 @@
 const express = require('express');
-const app = express()
+const path = require('path');
+require('dotenv').config();
 
-const cors = require('cors')
+const app = express();
+
+const cors = require('cors');
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:5173'
-}))
+    origin: process.env.CLIENT_URL || 'http://localhost:5173'
+}));
 
-app.use(express.json())
+app.use(express.json());
 
 // routes
 const usersRouter = require("./routes/Users");
@@ -19,6 +22,16 @@ app.use("/booking", bookingsRouter);
 const adminRouter = require("./routes/Admin");
 app.use("/admin-api", adminRouter);
 
-app.listen(4000, () => {
-    console.log("Server running on port 4000");
-})
+// Serve client static build
+const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
+app.use(express.static(clientBuildPath));
+
+// SPA catch-all: mọi route không match API sẽ trả về index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

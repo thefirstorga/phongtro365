@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "start": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build": "npx prisma generate",
+    "start": "node index.js"
   },
   "dependencies": {
     "@prisma/client": "^5.21.1",
