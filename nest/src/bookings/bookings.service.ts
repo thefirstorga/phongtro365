@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class BookingsService {}
+export class BookingsService {
+  async getPost(id: string) {
+    return 'fjhdsa';
+  }
+}
